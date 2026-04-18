@@ -4,7 +4,7 @@
 
 | Module | Status | Notes |
 | --- | --- | --- |
-| Project Scaffolding | ⚠️ | Folder structure and docs created |
+| Project Scaffolding | ✅ | Initialized Go module and main entry point |
 | Auth & RBAC | ❌ | Not started |
 | Organization Management | ❌ | Not started |
 | Academic Catalog | ❌ | Not started |
