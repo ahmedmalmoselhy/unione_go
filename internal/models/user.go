@@ -16,13 +16,17 @@ const (
 )
 
 type User struct {
-	ID        uint           `gorm:"primaryKey" json:"id"`
-	Email     string         `gorm:"uniqueIndex;not null" json:"email"`
-	Password  string         `gorm:"not null" json:"-"`
-	FirstName string         `json:"first_name"`
-	LastName  string         `json:"last_name"`
-	Role      Role           `gorm:"type:varchar(20);not null" json:"role"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+	ID           uint           `gorm:"primaryKey" json:"id"`
+	Email        string         `gorm:"uniqueIndex;not null" json:"email"`
+	Password     string         `gorm:"not null" json:"-"`
+	FirstName    string         `json:"first_name"`
+	LastName     string         `json:"last_name"`
+	Role         Role           `gorm:"type:varchar(20);not null" json:"role"`
+	FacultyID    *uint          `json:"faculty_id"`
+	DepartmentID *uint          `json:"department_id"`
+	Faculty      *Faculty       `json:"-"`
+	Department   *Department    `json:"-"`
+	CreatedAt    time.Time      `json:"created_at"`
+	UpdatedAt    time.Time      `json:"updated_at"`
+	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
 }

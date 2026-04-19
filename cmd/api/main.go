@@ -18,7 +18,12 @@ func main() {
 	// Auto-migrate schema
 	log.Println("Migrating database schemas...")
 	if db.DB != nil {
-		err := db.DB.AutoMigrate(&models.User{})
+		err := db.DB.AutoMigrate(
+			&models.University{},
+			&models.Faculty{},
+			&models.Department{},
+			&models.User{},
+		)
 		if err != nil {
 			log.Fatalf("Failed to auto-migrate database: %v", err)
 		}
