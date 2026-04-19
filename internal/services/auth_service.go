@@ -49,11 +49,20 @@ func (s *authService) AuthenticateUser(email, password string) (string, error) {
 		return "", errors.New("invalid email or password")
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	claims := jwt.MapClaims{
 		"sub":  user.ID,
 		"role": user.Role,
 		"exp":  time.Now().Add(time.Hour * 72).Unix(),
-	})
+	}
+
+	if user.FacultyID != nil {
+		claims["faculty_id"] = *user.FacultyID
+	}
+	if user.DepartmentID != nil {
+		claims["department_id"] = *user.DepartmentID
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	tokenString, err := token.SignedString([]byte(s.cfg.JWTSecret))
 	if err != nil {

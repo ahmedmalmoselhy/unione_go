@@ -42,8 +42,41 @@ func AuthMiddleware() gin.HandlerFunc {
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
 			c.Set("user_id", claims["sub"])
 			c.Set("role", claims["role"])
+			
+			if facID, ok := claims["faculty_id"]; ok {
+				c.Set("faculty_id", facID)
+			}
+			if deptID, ok := claims["department_id"]; ok {
+				c.Set("department_id", deptID)
+			}
 		} else {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Failed to parse token claims"})
+			return
+		}
+
+		c.Next()
+	}
+}
+
+func RequireFacultyScope() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, _ := c.Get("role")
+		if role == "admin" {
+			c.Next()
+			return
+		}
+
+		userFacIDRaw, exists := c.Get("faculty_id")
+		if !exists {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Forbidden: missing faculty scope"})
+			return
+		}
+
+		reqFacID := c.Param("faculty_id")
+		userFacIDStr := fmt.Sprintf("%v", userFacIDRaw)
+
+		if userFacIDStr != reqFacID {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Forbidden: unauthorized faculty scope"})
 			return
 		}
 

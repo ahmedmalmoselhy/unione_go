@@ -47,10 +47,10 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			orgs.POST("/universities", middlewares.RequireRole("admin"), orgHandler.CreateUniversity)
 			
 			orgs.GET("/universities/:university_id/faculties", orgHandler.GetFaculties)
-			orgs.POST("/universities/:university_id/faculties", middlewares.RequireRole("admin", "employee"), orgHandler.CreateFaculty)
+			orgs.POST("/universities/:university_id/faculties", middlewares.RequireRole("admin"), orgHandler.CreateFaculty) // Only admins make faculties
 			
 			orgs.GET("/faculties/:faculty_id/departments", orgHandler.GetDepartments)
-			orgs.POST("/faculties/:faculty_id/departments", middlewares.RequireRole("admin", "employee"), orgHandler.CreateDepartment)
+			orgs.POST("/faculties/:faculty_id/departments", middlewares.RequireRole("admin", "employee"), middlewares.RequireFacultyScope(), orgHandler.CreateDepartment)
 		}
 	}
 
