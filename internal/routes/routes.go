@@ -20,6 +20,10 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	authService := services.NewAuthService(userRepo, cfg)
 	authHandler := handlers.NewAuthHandler(authService)
 
+	orgRepo := repository.NewOrgRepository(db)
+	orgService := services.NewOrgService(orgRepo)
+	orgHandler := handlers.NewOrgHandler(orgService)
+
 	api := r.Group("/api")
 	
 	// Health check endpoint
@@ -34,6 +38,19 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			auth.POST("/login", authHandler.Login)
 			auth.POST("/register", authHandler.Register)
 			auth.GET("/me", middlewares.AuthMiddleware(), authHandler.GetMe)
+		}
+
+		// Organizations
+		orgs := v1.Group("/organizations", middlewares.AuthMiddleware())
+		{
+			orgs.GET("/universities", orgHandler.GetUniversities)
+			orgs.POST("/universities", middlewares.RequireRole("admin"), orgHandler.CreateUniversity)
+			
+			orgs.GET("/universities/:university_id/faculties", orgHandler.GetFaculties)
+			orgs.POST("/universities/:university_id/faculties", middlewares.RequireRole("admin", "employee"), orgHandler.CreateFaculty)
+			
+			orgs.GET("/faculties/:faculty_id/departments", orgHandler.GetDepartments)
+			orgs.POST("/faculties/:faculty_id/departments", middlewares.RequireRole("admin", "employee"), orgHandler.CreateDepartment)
 		}
 	}
 
