@@ -1,9 +1,7 @@
 package db
 
 import (
-	"fmt"
 	"log"
-	"os"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -12,16 +10,11 @@ import (
 
 var DB *gorm.DB
 
-func InitDB() {
-	host := os.Getenv("DB_HOST")
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbname := os.Getenv("DB_NAME")
-	port := os.Getenv("DB_PORT")
-
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
-		host, user, password, dbname, port,
-	)
+func InitDB(dsn string) {
+	if dsn == "" {
+		log.Println("Database DSN is empty, ensure environment variables are set")
+		return
+	}
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
