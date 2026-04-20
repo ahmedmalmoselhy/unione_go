@@ -27,6 +27,7 @@ type AcademicService interface {
 	CreateSection(courseID, termID uint, capacity int, schedule string) (*models.Section, error)
 	GetSectionsByCourse(courseID uint) ([]models.Section, error)
 	GetSectionsByTerm(termID uint) ([]models.Section, error)
+	GetSectionsByProfessor(profID uint) ([]models.Section, error)
 	GetSection(id uint) (*models.Section, error)
 	UpdateSection(id uint, capacity int, schedule string, professorID *uint) (*models.Section, error)
 	DeleteSection(id uint) error
@@ -37,6 +38,14 @@ type AcademicService interface {
 	GetSectionEnrollments(sectionID uint) ([]models.Enrollment, error)
 	UpdateGrade(studentID, sectionID uint, grade float64) (*models.Enrollment, error)
 	DropSection(studentID, sectionID uint) error
+
+	// Attendance
+	RecordAttendance(sectionID uint, date time.Time, studentPresence map[uint]bool) error
+	GetSectionAttendance(sectionID uint, date time.Time) ([]models.Attendance, error)
+	GetStudentAttendance(studentID, sectionID uint) ([]models.Attendance, error)
+
+	// GPA Calculation
+	CalculateGPA(studentID uint) (float64, error)
 }
 
 type academicService struct {
@@ -137,6 +146,10 @@ func (s *academicService) GetSectionsByTerm(termID uint) ([]models.Section, erro
 	return s.repo.GetSectionsByTerm(termID)
 }
 
+func (s *academicService) GetSectionsByProfessor(profID uint) ([]models.Section, error) {
+	return s.repo.GetSectionsByProfessor(profID)
+}
+
 func (s *academicService) GetSection(id uint) (*models.Section, error) {
 	return s.repo.GetSectionByID(id)
 }
@@ -177,7 +190,6 @@ func (s *academicService) EnrollStudent(studentID, sectionID uint) (*models.Enro
 	}
 
 	var currentCount int64
-	// In a real app, I'd have a specific repo method for this, but using GetEnrollmentsBySection for now
 	enrollments, _ := s.repo.GetEnrollmentsBySection(sectionID)
 	currentCount = int64(len(enrollments))
 
@@ -219,4 +231,52 @@ func (s *academicService) DropSection(studentID, sectionID uint) error {
 		return err
 	}
 	return s.repo.DeleteEnrollment(enrollment.ID)
+}
+
+// Attendance logic
+func (s *academicService) RecordAttendance(sectionID uint, date time.Time, studentPresence map[uint]bool) error {
+	for studentID, isPresent := range studentPresence {
+		attendance := &models.Attendance{
+			SectionID: sectionID,
+			StudentID: studentID,
+			Date:      date,
+			IsPresent: isPresent,
+		}
+		if err := s.repo.CreateAttendance(attendance); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *academicService) GetSectionAttendance(sectionID uint, date time.Time) ([]models.Attendance, error) {
+	return s.repo.GetAttendanceBySectionAndDate(sectionID, date)
+}
+
+func (s *academicService) GetStudentAttendance(studentID, sectionID uint) ([]models.Attendance, error) {
+	return s.repo.GetAttendanceByStudentAndSection(studentID, sectionID)
+}
+
+// GPA Calculation logic
+func (s *academicService) CalculateGPA(studentID uint) (float64, error) {
+	enrollments, err := s.repo.GetEnrollmentsByStudent(studentID)
+	if err != nil {
+		return 0, err
+	}
+
+	var totalGradePoints float64
+	var totalCredits int
+
+	for _, e := range enrollments {
+		if e.Grade != nil && e.Section != nil && e.Section.Course != nil {
+			totalGradePoints += (*e.Grade) * float64(e.Section.Course.Credits)
+			totalCredits += e.Section.Course.Credits
+		}
+	}
+
+	if totalCredits == 0 {
+		return 0, nil
+	}
+
+	return totalGradePoints / float64(totalCredits), nil
 }
