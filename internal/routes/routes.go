@@ -94,6 +94,13 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			academic.POST("/sections/:section_id/enroll", middlewares.RequireRole("admin", "employee", "student"), academicHandler.Enroll)
 			academic.GET("/students/:student_id/enrollments", middlewares.RequireRole("admin", "employee", "student"), academicHandler.GetStudentEnrollments)
 			academic.PUT("/sections/:section_id/students/:student_id/grade", middlewares.RequireRole("admin", "professor"), academicHandler.UpdateGrade)
+
+			// Attendance
+			academic.POST("/sections/:section_id/attendance", middlewares.RequireRole("admin", "professor"), academicHandler.RecordAttendance)
+			academic.GET("/sections/:section_id/attendance", middlewares.RequireRole("admin", "professor"), academicHandler.GetSectionAttendance)
+
+			// GPA
+			academic.GET("/students/:student_id/gpa", middlewares.RequireRole("admin", "employee", "student"), academicHandler.GetGPA)
 		}
 	}
 
