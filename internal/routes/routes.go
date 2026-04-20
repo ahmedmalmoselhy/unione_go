@@ -43,14 +43,23 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		// Organizations
 		orgs := v1.Group("/organizations", middlewares.AuthMiddleware())
 		{
+			// Universities
 			orgs.GET("/universities", orgHandler.GetUniversities)
 			orgs.POST("/universities", middlewares.RequireRole("admin"), orgHandler.CreateUniversity)
+			orgs.PUT("/universities/:id", middlewares.RequireRole("admin"), orgHandler.UpdateUniversity)
+			orgs.DELETE("/universities/:id", middlewares.RequireRole("admin"), orgHandler.DeleteUniversity)
 			
+			// Faculties
 			orgs.GET("/universities/:university_id/faculties", orgHandler.GetFaculties)
-			orgs.POST("/universities/:university_id/faculties", middlewares.RequireRole("admin"), orgHandler.CreateFaculty) // Only admins make faculties
+			orgs.POST("/universities/:university_id/faculties", middlewares.RequireRole("admin"), orgHandler.CreateFaculty)
+			orgs.PUT("/faculties/:id", middlewares.RequireRole("admin"), orgHandler.UpdateFaculty)
+			orgs.DELETE("/faculties/:id", middlewares.RequireRole("admin"), orgHandler.DeleteFaculty)
 			
+			// Departments
 			orgs.GET("/faculties/:faculty_id/departments", orgHandler.GetDepartments)
 			orgs.POST("/faculties/:faculty_id/departments", middlewares.RequireRole("admin", "employee"), middlewares.RequireFacultyScope(), orgHandler.CreateDepartment)
+			orgs.PUT("/departments/:id", middlewares.RequireRole("admin", "employee"), middlewares.RequireFacultyScope(), orgHandler.UpdateDepartment)
+			orgs.DELETE("/departments/:id", middlewares.RequireRole("admin", "employee"), middlewares.RequireFacultyScope(), orgHandler.DeleteDepartment)
 		}
 	}
 
