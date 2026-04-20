@@ -59,3 +59,16 @@ type Enrollment struct {
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
+
+type Attendance struct {
+	ID        uint           `gorm:"primaryKey" json:"id"`
+	SectionID uint           `gorm:"not null" json:"section_id"`
+	Section   *Section       `json:"section,omitempty"`
+	StudentID uint           `gorm:"not null" json:"student_id"`
+	Student   *User          `json:"student,omitempty"`
+	Date      time.Time      `gorm:"not null" json:"date"`
+	IsPresent bool           `gorm:"default:true" json:"is_present"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+}
