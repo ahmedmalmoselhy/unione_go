@@ -27,6 +27,10 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	employeeService := services.NewEmployeeService(userRepo)
 	employeeHandler := handlers.NewEmployeeHandler(employeeService)
 
+	academicRepo := repository.NewAcademicRepository(db)
+	academicService := services.NewAcademicService(academicRepo, userRepo)
+	academicHandler := handlers.NewAcademicHandler(academicService)
+
 	api := r.Group("/api")
 	
 	// Health check endpoint
@@ -69,6 +73,27 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			orgs.POST("/faculties/:faculty_id/employees", middlewares.RequireRole("admin"), employeeHandler.CreateEmployee)
 			orgs.PUT("/employees/:id", middlewares.RequireRole("admin"), employeeHandler.UpdateEmployee)
 			orgs.DELETE("/employees/:id", middlewares.RequireRole("admin"), employeeHandler.DeleteEmployee)
+		}
+
+		// Academic Catalog & Enrollments
+		academic := v1.Group("/academic", middlewares.AuthMiddleware())
+		{
+			// Terms
+			academic.GET("/terms", academicHandler.GetTerms)
+			academic.POST("/terms", middlewares.RequireRole("admin"), academicHandler.CreateTerm)
+
+			// Courses
+			academic.GET("/courses", academicHandler.GetCourses)
+			academic.POST("/courses", middlewares.RequireRole("admin", "employee"), academicHandler.CreateCourse)
+
+			// Sections
+			academic.GET("/sections", academicHandler.GetSections)
+			academic.POST("/sections", middlewares.RequireRole("admin", "employee"), academicHandler.CreateSection)
+
+			// Enrollments
+			academic.POST("/sections/:section_id/enroll", middlewares.RequireRole("admin", "employee", "student"), academicHandler.Enroll)
+			academic.GET("/students/:student_id/enrollments", middlewares.RequireRole("admin", "employee", "student"), academicHandler.GetStudentEnrollments)
+			academic.PUT("/sections/:section_id/students/:student_id/grade", middlewares.RequireRole("admin", "professor"), academicHandler.UpdateGrade)
 		}
 	}
 
