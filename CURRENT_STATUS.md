@@ -8,7 +8,7 @@
 | Auth & RBAC | ✅ | JWT Middleware and Basic Role/Scope checks implemented |
 | Organization Management | ✅ | Models, CRUD and Employee Management completed. |
 | Academic Catalog | ✅ | Course, Section, Term models and enrollment logic done. |
-| Student/Professor Portals | ❌ | Not started |
+| Student/Professor Portals | ✅ | Professor section management, Grading, Attendance, and GPA. |
 
 ## Last Update
-April 20, 2026 - Phase 3 completed: Academic Catalog & Enrollments. Ready for Phase 4.
+April 20, 2026 - Phase 4 completed: Professor Portal & Grading. Ready for Phase 5.
