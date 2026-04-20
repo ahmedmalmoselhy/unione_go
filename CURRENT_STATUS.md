@@ -7,8 +7,8 @@
 | Project Scaffolding | ✅ | Initialized Go module and main entry point |
 | Auth & RBAC | ✅ | JWT Middleware and Basic Role/Scope checks implemented |
 | Organization Management | ✅ | Models, CRUD and Employee Management completed. |
-| Academic Catalog | ❌ | Not started |
+| Academic Catalog | ✅ | Course, Section, Term models and enrollment logic done. |
 | Student/Professor Portals | ❌ | Not started |
 
 ## Last Update
-April 20, 2026 - Phase 2 completed: Organization Hierarchy & Employee Management. Ready for Phase 3.
+April 20, 2026 - Phase 3 completed: Academic Catalog & Enrollments. Ready for Phase 4.
