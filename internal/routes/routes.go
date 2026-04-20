@@ -24,6 +24,9 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	orgService := services.NewOrgService(orgRepo)
 	orgHandler := handlers.NewOrgHandler(orgService)
 
+	employeeService := services.NewEmployeeService(userRepo)
+	employeeHandler := handlers.NewEmployeeHandler(employeeService)
+
 	api := r.Group("/api")
 	
 	// Health check endpoint
@@ -60,6 +63,12 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			orgs.POST("/faculties/:faculty_id/departments", middlewares.RequireRole("admin", "employee"), middlewares.RequireFacultyScope(), orgHandler.CreateDepartment)
 			orgs.PUT("/departments/:id", middlewares.RequireRole("admin", "employee"), middlewares.RequireFacultyScope(), orgHandler.UpdateDepartment)
 			orgs.DELETE("/departments/:id", middlewares.RequireRole("admin", "employee"), middlewares.RequireFacultyScope(), orgHandler.DeleteDepartment)
+
+			// Employees (Staff)
+			orgs.GET("/faculties/:faculty_id/employees", middlewares.RequireRole("admin", "employee"), middlewares.RequireFacultyScope(), employeeHandler.GetEmployees)
+			orgs.POST("/faculties/:faculty_id/employees", middlewares.RequireRole("admin"), employeeHandler.CreateEmployee)
+			orgs.PUT("/employees/:id", middlewares.RequireRole("admin"), employeeHandler.UpdateEmployee)
+			orgs.DELETE("/employees/:id", middlewares.RequireRole("admin"), employeeHandler.DeleteEmployee)
 		}
 	}
 
