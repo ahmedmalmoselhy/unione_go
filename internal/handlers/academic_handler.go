@@ -117,6 +117,7 @@ func (h *AcademicHandler) CreateSection(c *gin.Context) {
 func (h *AcademicHandler) GetSections(c *gin.Context) {
 	courseIDStr := c.Query("course_id")
 	termIDStr := c.Query("academic_term_id")
+	profIDStr := c.Query("professor_id")
 	
 	if courseIDStr != "" {
 		courseID, _ := strconv.ParseUint(courseIDStr, 10, 32)
@@ -139,8 +140,19 @@ func (h *AcademicHandler) GetSections(c *gin.Context) {
 		c.JSON(http.StatusOK, sections)
 		return
 	}
+
+	if profIDStr != "" {
+		profID, _ := strconv.ParseUint(profIDStr, 10, 32)
+		sections, err := h.academicService.GetSectionsByProfessor(uint(profID))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, sections)
+		return
+	}
 	
-	c.JSON(http.StatusBadRequest, gin.H{"error": "course_id or academic_term_id is required"})
+	c.JSON(http.StatusBadRequest, gin.H{"error": "course_id, academic_term_id or professor_id is required"})
 }
 
 // Enrollments
@@ -148,8 +160,6 @@ func (h *AcademicHandler) Enroll(c *gin.Context) {
 	sectionIDStr := c.Param("section_id")
 	sectionID, _ := strconv.ParseUint(sectionIDStr, 10, 32)
 	
-	// Assuming student_id is either in body or extracted from token for current user
-	// For admin/employee to enroll a student, it should be in body.
 	var input struct {
 		StudentID uint `json:"student_id" binding:"required"`
 	}
@@ -200,4 +210,60 @@ func (h *AcademicHandler) UpdateGrade(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, enrollment)
+}
+
+// Attendance
+type RecordAttendanceInput struct {
+	Date            time.Time    `json:"date" binding:"required"`
+	StudentPresence map[uint]bool `json:"student_presence" binding:"required"`
+}
+
+func (h *AcademicHandler) RecordAttendance(c *gin.Context) {
+	sectionIDStr := c.Param("section_id")
+	sectionID, _ := strconv.ParseUint(sectionIDStr, 10, 32)
+
+	var input RecordAttendanceInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.academicService.RecordAttendance(uint(sectionID), input.Date, input.StudentPresence); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Attendance recorded successfully"})
+}
+
+func (h *AcademicHandler) GetSectionAttendance(c *gin.Context) {
+	sectionIDStr := c.Param("section_id")
+	dateStr := c.Query("date")
+	sectionID, _ := strconv.ParseUint(sectionIDStr, 10, 32)
+	
+	date, err := time.Parse(time.RFC3339, dateStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use RFC3339"})
+		return
+	}
+
+	attendance, err := h.academicService.GetSectionAttendance(uint(sectionID), date)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, attendance)
+}
+
+// GPA
+func (h *AcademicHandler) GetGPA(c *gin.Context) {
+	studentIDStr := c.Param("student_id")
+	studentID, _ := strconv.ParseUint(studentIDStr, 10, 32)
+
+	gpa, err := h.academicService.CalculateGPA(uint(studentID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"student_id": studentID, "gpa": gpa})
 }
