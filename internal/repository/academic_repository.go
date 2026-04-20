@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"time"
+
 	"github.com/ahmedmalmoselhy/unione_go/internal/models"
 	"gorm.io/gorm"
 )
@@ -24,6 +26,7 @@ type AcademicRepository interface {
 	CreateSection(section *models.Section) error
 	GetSectionsByCourse(courseID uint) ([]models.Section, error)
 	GetSectionsByTerm(termID uint) ([]models.Section, error)
+	GetSectionsByProfessor(profID uint) ([]models.Section, error)
 	GetSectionByID(id uint) (*models.Section, error)
 	UpdateSection(section *models.Section) error
 	DeleteSection(id uint) error
@@ -35,6 +38,11 @@ type AcademicRepository interface {
 	GetEnrollment(studentID, sectionID uint) (*models.Enrollment, error)
 	UpdateEnrollment(enrollment *models.Enrollment) error
 	DeleteEnrollment(id uint) error
+
+	// Attendance
+	CreateAttendance(attendance *models.Attendance) error
+	GetAttendanceBySectionAndDate(sectionID uint, date time.Time) ([]models.Attendance, error)
+	GetAttendanceByStudentAndSection(studentID, sectionID uint) ([]models.Attendance, error)
 }
 
 type academicRepository struct {
@@ -112,6 +120,12 @@ func (r *academicRepository) GetSectionsByTerm(termID uint) ([]models.Section, e
 	return sections, err
 }
 
+func (r *academicRepository) GetSectionsByProfessor(profID uint) ([]models.Section, error) {
+	var sections []models.Section
+	err := r.db.Preload("Course").Preload("AcademicTerm").Where("professor_id = ?", profID).Find(&sections).Error
+	return sections, err
+}
+
 func (r *academicRepository) GetSectionByID(id uint) (*models.Section, error) {
 	var section models.Section
 	err := r.db.Preload("Course").Preload("AcademicTerm").First(&section, id).Error
@@ -155,4 +169,21 @@ func (r *academicRepository) UpdateEnrollment(enrollment *models.Enrollment) err
 
 func (r *academicRepository) DeleteEnrollment(id uint) error {
 	return r.db.Delete(&models.Enrollment{}, id).Error
+}
+
+// Attendance implementations
+func (r *academicRepository) CreateAttendance(attendance *models.Attendance) error {
+	return r.db.Create(attendance).Error
+}
+
+func (r *academicRepository) GetAttendanceBySectionAndDate(sectionID uint, date time.Time) ([]models.Attendance, error) {
+	var attendance []models.Attendance
+	err := r.db.Where("section_id = ? AND date = ?", sectionID, date).Find(&attendance).Error
+	return attendance, err
+}
+
+func (r *academicRepository) GetAttendanceByStudentAndSection(studentID, sectionID uint) ([]models.Attendance, error) {
+	var attendance []models.Attendance
+	err := r.db.Where("student_id = ? AND section_id = ?", studentID, sectionID).Find(&attendance).Error
+	return attendance, err
 }
