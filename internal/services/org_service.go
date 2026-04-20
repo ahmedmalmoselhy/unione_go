@@ -10,12 +10,18 @@ import (
 type OrgService interface {
 	CreateUniversity(name string) (*models.University, error)
 	GetUniversities() ([]models.University, error)
+	UpdateUniversity(id uint, name string) (*models.University, error)
+	DeleteUniversity(id uint) error
 
 	CreateFaculty(name string, uniID uint) (*models.Faculty, error)
 	GetFaculties(uniID uint) ([]models.Faculty, error)
+	UpdateFaculty(id uint, name string) (*models.Faculty, error)
+	DeleteFaculty(id uint) error
 
 	CreateDepartment(name string, facultyID uint) (*models.Department, error)
 	GetDepartments(facultyID uint) ([]models.Department, error)
+	UpdateDepartment(id uint, name string) (*models.Department, error)
+	DeleteDepartment(id uint) error
 }
 
 type orgService struct {
@@ -41,13 +47,27 @@ func (s *orgService) GetUniversities() ([]models.University, error) {
 	return s.repo.GetUniversities()
 }
 
+func (s *orgService) UpdateUniversity(id uint, name string) (*models.University, error) {
+	uni, err := s.repo.GetUniversityByID(id)
+	if err != nil {
+		return nil, err
+	}
+	uni.Name = name
+	if err := s.repo.UpdateUniversity(uni); err != nil {
+		return nil, err
+	}
+	return uni, nil
+}
+
+func (s *orgService) DeleteUniversity(id uint) error {
+	return s.repo.DeleteUniversity(id)
+}
+
 func (s *orgService) CreateFaculty(name string, uniID uint) (*models.Faculty, error) {
 	if name == "" {
 		return nil, errors.New("faculty name cannot be empty")
 	}
 	
-	// Validate university exists indirectly or trust DB foreign key constraints.
-	// For purity, you might want to fetch University first, but keeping it simple:
 	faculty := &models.Faculty{Name: name, UniversityID: uniID}
 	if err := s.repo.CreateFaculty(faculty); err != nil {
 		return nil, err
@@ -57,6 +77,22 @@ func (s *orgService) CreateFaculty(name string, uniID uint) (*models.Faculty, er
 
 func (s *orgService) GetFaculties(uniID uint) ([]models.Faculty, error) {
 	return s.repo.GetFacultiesByUniversity(uniID)
+}
+
+func (s *orgService) UpdateFaculty(id uint, name string) (*models.Faculty, error) {
+	faculty, err := s.repo.GetFacultyByID(id)
+	if err != nil {
+		return nil, err
+	}
+	faculty.Name = name
+	if err := s.repo.UpdateFaculty(faculty); err != nil {
+		return nil, err
+	}
+	return faculty, nil
+}
+
+func (s *orgService) DeleteFaculty(id uint) error {
+	return s.repo.DeleteFaculty(id)
 }
 
 func (s *orgService) CreateDepartment(name string, facultyID uint) (*models.Department, error) {
@@ -79,4 +115,20 @@ func (s *orgService) CreateDepartment(name string, facultyID uint) (*models.Depa
 
 func (s *orgService) GetDepartments(facultyID uint) ([]models.Department, error) {
 	return s.repo.GetDepartmentsByFaculty(facultyID)
+}
+
+func (s *orgService) UpdateDepartment(id uint, name string) (*models.Department, error) {
+	dept, err := s.repo.GetDepartmentByID(id)
+	if err != nil {
+		return nil, err
+	}
+	dept.Name = name
+	if err := s.repo.UpdateDepartment(dept); err != nil {
+		return nil, err
+	}
+	return dept, nil
+}
+
+func (s *orgService) DeleteDepartment(id uint) error {
+	return s.repo.DeleteDepartment(id)
 }
