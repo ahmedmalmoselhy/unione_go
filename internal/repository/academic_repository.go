@@ -43,6 +43,10 @@ type AcademicRepository interface {
 	CreateAttendance(attendance *models.Attendance) error
 	GetAttendanceBySectionAndDate(sectionID uint, date time.Time) ([]models.Attendance, error)
 	GetAttendanceByStudentAndSection(studentID, sectionID uint) ([]models.Attendance, error)
+
+	// Exam
+	CreateExam(exam *models.Exam) error
+	GetExamsBySection(sectionID uint) ([]models.Exam, error)
 }
 
 type academicRepository struct {
@@ -186,4 +190,15 @@ func (r *academicRepository) GetAttendanceByStudentAndSection(studentID, section
 	var attendance []models.Attendance
 	err := r.db.Where("student_id = ? AND section_id = ?", studentID, sectionID).Find(&attendance).Error
 	return attendance, err
+}
+
+// Exam implementations
+func (r *academicRepository) CreateExam(exam *models.Exam) error {
+	return r.db.Create(exam).Error
+}
+
+func (r *academicRepository) GetExamsBySection(sectionID uint) ([]models.Exam, error) {
+	var exams []models.Exam
+	err := r.db.Preload("Section.Course").Where("section_id = ?", sectionID).Find(&exams).Error
+	return exams, err
 }
