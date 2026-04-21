@@ -1,45 +1,58 @@
 # UniOne Go - Enhancements
 
 Last Updated: April 21, 2026
-Current Status: Phase 5 Completed
+Current Status: Partial backend foundation implemented
 Implementation: Go (Gin + GORM)
 
 ## Overview
 
-Go implementation of the UniOne backend focusing on high concurrency and performance.
+The Go port has working foundations in auth, organization management, employee management, selected academic operations, and announcement creation. The implementation is still partial and should not be described as feature-complete.
 
-## Roadmap
+## Implemented Foundations
 
-### Phase 1: Core Foundation & Identity ✅
+### Core foundation and identity
 - [x] Project scaffolding and module initialization
-- [x] Database connection and migration setup
-- [x] JWT Authentication and RBAC implementation
-- [x] Organization management module (University, Faculty, Department)
+- [x] Database connection bootstrap
+- [x] JWT authentication
+- [x] Role and scope middleware
 
-### Phase 2: Organization Hierarchy & Academic Catalog ✅
-- [x] Academic Catalog (Courses, Sections, Terms)
-- [x] People Management (Students, Professors, Employees)
-- [x] Enrollment system
+### Organization and people
+- [x] Universities CRUD
+- [x] Faculties CRUD
+- [x] Departments CRUD
+- [x] Employee CRUD by faculty
+- [x] Student Excel import through employee flows
 
-### Phase 3: Assignments & Operations ✅
-- [x] Professor/Student portals
-- [x] Section management and scheduling
-- [x] Group projects management
+### Academic subset
+- [x] Attendance recording
+- [x] Attendance lookup by section/date
+- [x] GPA lookup
+- [x] Grade import from uploaded files
+- [x] Exam creation and listing
 
-### Phase 4: Assessment & Grading ✅
-- [x] Exam scheduling with conflict detection
-- [x] Grading system and GPA calculation
-- [x] Attendance tracking
+### Communication
+- [x] Announcement creation endpoint
+- [x] Notification service wiring behind announcement creation
 
-### Phase 5: File Processing & Notifications ✅
-- [x] Excel/CSV imports for students (Employees)
-- [x] Excel/CSV imports for grades (Professors)
-- [x] Notification system with background email delivery (Goroutines)
-- [x] Global, Faculty, and Section-scoped announcements
+## Present But Not Fully Exposed
+
+- Handlers exist for terms, courses, sections, enrollments, and grade updates.
+- The current router does not yet expose all of those handlers as stable public endpoints.
+
+## Not Yet Implemented At Parity
+
+- Broad student portal API
+- Broad professor portal API
+- Broad admin CRUD API
+- Webhooks
+- Analytics and reporting
+- Export flows
+- Comprehensive API documentation
+- Automated test suite
 
 ## Next Steps
 
-1. **API Documentation:** Integrate Swagger/OpenAPI (e.g., using `swaggo`).
-2. **Testing:** Increase unit and integration test coverage.
-3. **Advanced Analytics:** Implement reporting features for student performance.
-4. **WebSockets:** Add real-time interactive notifications.
+1. Expose the existing academic handlers through a fuller public route surface.
+2. Add student, professor, and admin route groups that match the implemented domain model.
+3. Implement webhooks, analytics, exports, and richer notification flows.
+4. Add Swagger/OpenAPI and automated tests.
