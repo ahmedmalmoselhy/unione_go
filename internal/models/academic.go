@@ -72,3 +72,14 @@ type Attendance struct {
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
+
+type Exam struct {
+	ID        uint           `gorm:"primaryKey" json:"id"`
+	SectionID uint           `gorm:"not null" json:"section_id"`
+	Section   *Section       `json:"section,omitempty"`
+	Date      time.Time      `gorm:"not null" json:"date"`
+	Location  string         `json:"location"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+}
