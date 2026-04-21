@@ -2,10 +2,14 @@ package services
 
 import (
 	"errors"
+	"fmt"
+	"io"
+	"strconv"
 	"time"
 
 	"github.com/ahmedmalmoselhy/unione_go/internal/models"
 	"github.com/ahmedmalmoselhy/unione_go/internal/repository"
+	"github.com/xuri/excelize/v2"
 )
 
 type AcademicService interface {
@@ -44,6 +48,12 @@ type AcademicService interface {
 	GetSectionAttendance(sectionID uint, date time.Time) ([]models.Attendance, error)
 	GetStudentAttendance(studentID, sectionID uint) ([]models.Attendance, error)
 
+	ImportGradesFromExcel(file io.Reader, sectionID uint) (int, error)
+
+	// Exam
+	CreateExam(sectionID uint, date time.Time, location string) (*models.Exam, error)
+	GetExamsBySection(sectionID uint) ([]models.Exam, error)
+
 	// GPA Calculation
 	CalculateGPA(studentID uint) (float64, error)
 }
@@ -51,10 +61,11 @@ type AcademicService interface {
 type academicService struct {
 	repo     repository.AcademicRepository
 	userRepo repository.UserRepository
+	notifSvc NotificationService
 }
 
-func NewAcademicService(repo repository.AcademicRepository, userRepo repository.UserRepository) AcademicService {
-	return &academicService{repo: repo, userRepo: userRepo}
+func NewAcademicService(repo repository.AcademicRepository, userRepo repository.UserRepository, notifSvc NotificationService) AcademicService {
+	return &academicService{repo: repo, userRepo: userRepo, notifSvc: notifSvc}
 }
 
 // Term logic
@@ -255,6 +266,73 @@ func (s *academicService) GetSectionAttendance(sectionID uint, date time.Time) (
 
 func (s *academicService) GetStudentAttendance(studentID, sectionID uint) ([]models.Attendance, error) {
 	return s.repo.GetAttendanceByStudentAndSection(studentID, sectionID)
+}
+
+func (s *academicService) ImportGradesFromExcel(file io.Reader, sectionID uint) (int, error) {
+	f, err := excelize.OpenReader(file)
+	if err != nil {
+		return 0, fmt.Errorf("failed to open excel reader: %v", err)
+	}
+	defer f.Close()
+
+	rows, err := f.GetRows("Sheet1")
+	if err != nil {
+		return 0, fmt.Errorf("failed to get rows: %v", err)
+	}
+
+	successCount := 0
+	// Assume first row is header: Student ID, Grade
+	for i, row := range rows {
+		if i == 0 || len(row) < 2 {
+			continue
+		}
+
+		studentID, err := strconv.ParseUint(row[0], 10, 32)
+		if err != nil {
+			continue
+		}
+
+		grade, err := strconv.ParseFloat(row[1], 64)
+		if err != nil {
+			continue
+		}
+
+		if _, err := s.UpdateGrade(uint(studentID), sectionID, grade); err == nil {
+			successCount++
+		}
+	}
+
+	if successCount > 0 {
+		section, _ := s.repo.GetSectionByID(sectionID)
+		courseName := ""
+		if section != nil && section.Course != nil {
+			courseName = section.Course.Name
+		}
+		s.notifSvc.NotifyStudentsInSections([]uint{sectionID}, "Final Grades Published", fmt.Sprintf("Final grades for %s have been published.", courseName))
+	}
+
+	return successCount, nil
+}
+
+func (s *academicService) CreateExam(sectionID uint, date time.Time, location string) (*models.Exam, error) {
+	exam := &models.Exam{SectionID: sectionID, Date: date, Location: location}
+	if err := s.repo.CreateExam(exam); err != nil {
+		return nil, err
+	}
+
+	// Trigger notification
+	section, _ := s.repo.GetSectionByID(sectionID)
+	courseName := ""
+	if section != nil && section.Course != nil {
+		courseName = section.Course.Name
+	}
+	s.notifSvc.NotifyStudentsInSections([]uint{sectionID}, "Exam Scheduled", fmt.Sprintf("An exam for %s has been scheduled for %s at %s.", courseName, date.Format("Jan 02, 2006 15:04"), location))
+
+	return exam, nil
+}
+
+func (s *academicService) GetExamsBySection(sectionID uint) ([]models.Exam, error) {
+	return s.repo.GetExamsBySection(sectionID)
 }
 
 // GPA Calculation logic

@@ -2,9 +2,12 @@ package services
 
 import (
 	"errors"
+	"fmt"
+	"io"
 
 	"github.com/ahmedmalmoselhy/unione_go/internal/models"
 	"github.com/ahmedmalmoselhy/unione_go/internal/repository"
+	"github.com/xuri/excelize/v2"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -13,6 +16,7 @@ type EmployeeService interface {
 	GetEmployeesByFaculty(facultyID uint) ([]models.User, error)
 	UpdateEmployee(id uint, firstName, lastName string) (*models.User, error)
 	DeleteEmployee(id uint) error
+	ImportStudentsFromExcel(file io.Reader, facultyID uint) (int, error)
 }
 
 type employeeService struct {
@@ -80,4 +84,47 @@ func (s *employeeService) DeleteEmployee(id uint) error {
 	}
 
 	return s.userRepo.DeleteUser(id)
+}
+
+func (s *employeeService) ImportStudentsFromExcel(file io.Reader, facultyID uint) (int, error) {
+	f, err := excelize.OpenReader(file)
+	if err != nil {
+		return 0, fmt.Errorf("failed to open excel reader: %v", err)
+	}
+	defer f.Close()
+
+	rows, err := f.GetRows("Sheet1")
+	if err != nil {
+		return 0, fmt.Errorf("failed to get rows: %v", err)
+	}
+
+	successCount := 0
+	// Assume first row is header: Email, Password, First Name, Last Name, Department ID (optional)
+	for i, row := range rows {
+		if i == 0 || len(row) < 4 {
+			continue
+		}
+
+		email := row[0]
+		password := row[1]
+		firstName := row[2]
+		lastName := row[3]
+
+		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+
+		user := &models.User{
+			Email:     email,
+			Password:  string(hashedPassword),
+			FirstName: firstName,
+			LastName:  lastName,
+			Role:      models.RoleStudent,
+			FacultyID: &facultyID,
+		}
+
+		if err := s.userRepo.CreateUser(user); err == nil {
+			successCount++
+		}
+	}
+
+	return successCount, nil
 }
