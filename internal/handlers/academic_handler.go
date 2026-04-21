@@ -256,6 +256,72 @@ func (h *AcademicHandler) GetSectionAttendance(c *gin.Context) {
 }
 
 // GPA
+func (h *AcademicHandler) ImportGrades(c *gin.Context) {
+	sectionIDStr := c.Param("section_id")
+	sectionID, err := strconv.ParseUint(sectionIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid section ID"})
+		return
+	}
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No file uploaded"})
+		return
+	}
+
+	openedFile, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open file"})
+		return
+	}
+	defer openedFile.Close()
+
+	count, err := h.academicService.ImportGradesFromExcel(openedFile, uint(sectionID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"imported_count": count})
+}
+
+// Exams
+type CreateExamInput struct {
+	Date     time.Time `json:"date" binding:"required"`
+	Location string    `json:"location" binding:"required"`
+}
+
+func (h *AcademicHandler) CreateExam(c *gin.Context) {
+	sectionIDStr := c.Param("section_id")
+	sectionID, _ := strconv.ParseUint(sectionIDStr, 10, 32)
+
+	var input CreateExamInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	exam, err := h.academicService.CreateExam(uint(sectionID), input.Date, input.Location)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, exam)
+}
+
+func (h *AcademicHandler) GetExams(c *gin.Context) {
+	sectionIDStr := c.Param("section_id")
+	sectionID, _ := strconv.ParseUint(sectionIDStr, 10, 32)
+
+	exams, err := h.academicService.GetExamsBySection(uint(sectionID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, exams)
+}
+
 func (h *AcademicHandler) GetGPA(c *gin.Context) {
 	studentIDStr := c.Param("student_id")
 	studentID, _ := strconv.ParseUint(studentIDStr, 10, 32)
