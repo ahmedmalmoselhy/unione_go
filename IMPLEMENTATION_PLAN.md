@@ -315,7 +315,7 @@ That work unlocks almost every later phase.
 - [x] Add student CRUD
 - [x] Add professor CRUD
 - [x] Complete employee parity gaps
-- [ ] Add student transfer/history
+- [x] Add student transfer/history
 
 ### Phase 3
 

@@ -122,6 +122,8 @@ Admin routes are currently mounted under `/api/v1/admin`.
 - `GET /students/:id`
 - `PUT /students/:id`
 - `DELETE /students/:id`
+- `POST /students/:id/transfer`
+- `GET /students/:id/transfers`
 
 ### Professors
 
@@ -143,4 +145,5 @@ Admin routes are currently mounted under `/api/v1/admin`.
 
 - Several handlers exist for terms, courses, sections, enrollments, and grade updates, but they are not all mounted in the current router.
 - Course prerequisites are now modeled and enforced during enrollment when prerequisite grades are available.
+- Student transfer history is persisted through `StudentDepartmentHistory`.
 - This document reflects exposed routes, not every handler present in the codebase.

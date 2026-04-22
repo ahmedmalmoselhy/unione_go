@@ -17,6 +17,8 @@ type UserRepository interface {
 	FindByID(id uint) (*models.User, error)
 	FindEmployeesByFaculty(facultyID uint) ([]models.User, error)
 	FindUsers(filter UserFilter) ([]models.User, error)
+	CreateStudentDepartmentHistory(history *models.StudentDepartmentHistory) error
+	GetStudentDepartmentHistory(studentID uint) ([]models.StudentDepartmentHistory, error)
 	UpdateUser(user *models.User) error
 	DeleteUser(id uint) error
 }
@@ -43,7 +45,7 @@ func (r *userRepository) FindByEmail(email string) (*models.User, error) {
 
 func (r *userRepository) FindByID(id uint) (*models.User, error) {
 	var user models.User
-	if err := r.db.First(&user, id).Error; err != nil {
+	if err := r.db.Preload("DepartmentTransfers").First(&user, id).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -71,6 +73,16 @@ func (r *userRepository) FindUsers(filter UserFilter) ([]models.User, error) {
 
 	err := query.Find(&users).Error
 	return users, err
+}
+
+func (r *userRepository) CreateStudentDepartmentHistory(history *models.StudentDepartmentHistory) error {
+	return r.db.Create(history).Error
+}
+
+func (r *userRepository) GetStudentDepartmentHistory(studentID uint) ([]models.StudentDepartmentHistory, error) {
+	var history []models.StudentDepartmentHistory
+	err := r.db.Where("student_id = ?", studentID).Order("transferred_at desc").Find(&history).Error
+	return history, err
 }
 
 func (r *userRepository) UpdateUser(user *models.User) error {

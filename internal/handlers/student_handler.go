@@ -32,6 +32,11 @@ type UpdateStudentInput struct {
 	DepartmentID *uint  `json:"department_id"`
 }
 
+type TransferStudentInput struct {
+	FacultyID    uint  `json:"faculty_id" binding:"required"`
+	DepartmentID *uint `json:"department_id"`
+}
+
 func (h *StudentHandler) CreateStudent(c *gin.Context) {
 	var input CreateStudentInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -142,4 +147,42 @@ func (h *StudentHandler) DeleteStudent(c *gin.Context) {
 	}
 
 	apiutil.NoContent(c)
+}
+
+func (h *StudentHandler) TransferStudent(c *gin.Context) {
+	id, err := apiutil.ParseUintParam(c, "id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_student_id", err.Error())
+		return
+	}
+
+	var input TransferStudentInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
+		return
+	}
+
+	student, err := h.studentService.TransferStudent(id, input.FacultyID, input.DepartmentID)
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "transfer_student_failed", err.Error())
+		return
+	}
+
+	apiutil.Success(c, http.StatusOK, student)
+}
+
+func (h *StudentHandler) GetTransferHistory(c *gin.Context) {
+	id, err := apiutil.ParseUintParam(c, "id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_student_id", err.Error())
+		return
+	}
+
+	history, err := h.studentService.GetTransferHistory(id)
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "transfer_history_failed", err.Error())
+		return
+	}
+
+	apiutil.Success(c, http.StatusOK, history)
 }

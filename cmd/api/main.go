@@ -26,6 +26,7 @@ func main() {
 			&models.Faculty{},
 			&models.Department{},
 			&models.User{},
+			&models.StudentDepartmentHistory{},
 			&models.AcademicTerm{},
 			&models.Course{},
 			&models.CoursePrerequisite{},

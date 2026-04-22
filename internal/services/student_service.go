@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"time"
 
 	"github.com/ahmedmalmoselhy/unione_go/internal/models"
 	"github.com/ahmedmalmoselhy/unione_go/internal/repository"
@@ -13,6 +14,8 @@ type StudentService interface {
 	ListStudents(facultyID, departmentID *uint) ([]models.User, error)
 	GetStudent(id uint) (*models.User, error)
 	UpdateStudent(id uint, firstName, lastName string, facultyID uint, departmentID *uint) (*models.User, error)
+	TransferStudent(id uint, facultyID uint, departmentID *uint) (*models.User, error)
+	GetTransferHistory(id uint) ([]models.StudentDepartmentHistory, error)
 	DeleteStudent(id uint) error
 }
 
@@ -121,4 +124,45 @@ func (s *studentService) DeleteStudent(id uint) error {
 	}
 
 	return s.userRepo.DeleteUser(user.ID)
+}
+
+func (s *studentService) TransferStudent(id uint, facultyID uint, departmentID *uint) (*models.User, error) {
+	if err := s.validateScope(facultyID, departmentID); err != nil {
+		return nil, err
+	}
+
+	user, err := s.GetStudent(id)
+	if err != nil {
+		return nil, err
+	}
+
+	history := &models.StudentDepartmentHistory{
+		StudentID:        user.ID,
+		FromDepartmentID: user.DepartmentID,
+		ToDepartmentID:   departmentID,
+		FromFacultyID:    user.FacultyID,
+		ToFacultyID:      &facultyID,
+		TransferredAt:    time.Now().UTC(),
+	}
+
+	user.FacultyID = &facultyID
+	user.DepartmentID = departmentID
+
+	if err := s.userRepo.UpdateUser(user); err != nil {
+		return nil, err
+	}
+
+	if err := s.userRepo.CreateStudentDepartmentHistory(history); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (s *studentService) GetTransferHistory(id uint) ([]models.StudentDepartmentHistory, error) {
+	if _, err := s.GetStudent(id); err != nil {
+		return nil, err
+	}
+
+	return s.userRepo.GetStudentDepartmentHistory(id)
 }
