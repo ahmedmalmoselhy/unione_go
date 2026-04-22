@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 
+	"github.com/ahmedmalmoselhy/unione_go/internal/apiutil"
 	"github.com/ahmedmalmoselhy/unione_go/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -23,219 +23,212 @@ type CreateOrgInput struct {
 func (h *OrgHandler) CreateUniversity(c *gin.Context) {
 	var input CreateOrgInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
 		return
 	}
 
 	uni, err := h.orgService.CreateUniversity(input.Name)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusInternalServerError, "create_university_failed", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusCreated, uni)
+	apiutil.Success(c, http.StatusCreated, uni)
 }
 
 func (h *OrgHandler) GetUniversities(c *gin.Context) {
 	unis, err := h.orgService.GetUniversities()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusInternalServerError, "list_universities_failed", err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, unis)
+
+	apiutil.Success(c, http.StatusOK, unis)
 }
 
 func (h *OrgHandler) UpdateUniversity(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
+	id, err := apiutil.ParseUintParam(c, "id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		apiutil.Error(c, http.StatusBadRequest, "invalid_id", err.Error())
 		return
 	}
 
 	var input CreateOrgInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
 		return
 	}
 
-	uni, err := h.orgService.UpdateUniversity(uint(id), input.Name)
+	uni, err := h.orgService.UpdateUniversity(id, input.Name)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusInternalServerError, "update_university_failed", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, uni)
+	apiutil.Success(c, http.StatusOK, uni)
 }
 
 func (h *OrgHandler) DeleteUniversity(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
+	id, err := apiutil.ParseUintParam(c, "id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		apiutil.Error(c, http.StatusBadRequest, "invalid_id", err.Error())
 		return
 	}
 
-	if err := h.orgService.DeleteUniversity(uint(id)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.orgService.DeleteUniversity(id); err != nil {
+		apiutil.Error(c, http.StatusInternalServerError, "delete_university_failed", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusNoContent, nil)
+	apiutil.NoContent(c)
 }
 
 func (h *OrgHandler) CreateFaculty(c *gin.Context) {
 	var input CreateOrgInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
 		return
 	}
 
-	uniIDStr := c.Param("university_id")
-	uniID, err := strconv.ParseUint(uniIDStr, 10, 32)
+	universityID, err := apiutil.ParseUintParam(c, "university_id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid university ID"})
+		apiutil.Error(c, http.StatusBadRequest, "invalid_university_id", err.Error())
 		return
 	}
 
-	faculty, err := h.orgService.CreateFaculty(input.Name, uint(uniID))
+	faculty, err := h.orgService.CreateFaculty(input.Name, universityID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusInternalServerError, "create_faculty_failed", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusCreated, faculty)
+	apiutil.Success(c, http.StatusCreated, faculty)
 }
 
 func (h *OrgHandler) GetFaculties(c *gin.Context) {
-	uniIDStr := c.Param("university_id")
-	uniID, err := strconv.ParseUint(uniIDStr, 10, 32)
+	universityID, err := apiutil.ParseUintParam(c, "university_id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid university ID"})
+		apiutil.Error(c, http.StatusBadRequest, "invalid_university_id", err.Error())
 		return
 	}
 
-	faculties, err := h.orgService.GetFaculties(uint(uniID))
+	faculties, err := h.orgService.GetFaculties(universityID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusInternalServerError, "list_faculties_failed", err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, faculties)
+
+	apiutil.Success(c, http.StatusOK, faculties)
 }
 
 func (h *OrgHandler) UpdateFaculty(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
+	id, err := apiutil.ParseUintParam(c, "id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		apiutil.Error(c, http.StatusBadRequest, "invalid_id", err.Error())
 		return
 	}
 
 	var input CreateOrgInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
 		return
 	}
 
-	faculty, err := h.orgService.UpdateFaculty(uint(id), input.Name)
+	faculty, err := h.orgService.UpdateFaculty(id, input.Name)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusInternalServerError, "update_faculty_failed", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, faculty)
+	apiutil.Success(c, http.StatusOK, faculty)
 }
 
 func (h *OrgHandler) DeleteFaculty(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
+	id, err := apiutil.ParseUintParam(c, "id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		apiutil.Error(c, http.StatusBadRequest, "invalid_id", err.Error())
 		return
 	}
 
-	if err := h.orgService.DeleteFaculty(uint(id)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.orgService.DeleteFaculty(id); err != nil {
+		apiutil.Error(c, http.StatusInternalServerError, "delete_faculty_failed", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusNoContent, nil)
+	apiutil.NoContent(c)
 }
 
 func (h *OrgHandler) CreateDepartment(c *gin.Context) {
 	var input CreateOrgInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
 		return
 	}
 
-	facultyIDStr := c.Param("faculty_id")
-	facultyID, err := strconv.ParseUint(facultyIDStr, 10, 32)
+	facultyID, err := apiutil.ParseUintParam(c, "faculty_id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid faculty ID"})
+		apiutil.Error(c, http.StatusBadRequest, "invalid_faculty_id", err.Error())
 		return
 	}
 
-	dept, err := h.orgService.CreateDepartment(input.Name, uint(facultyID))
+	department, err := h.orgService.CreateDepartment(input.Name, facultyID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusInternalServerError, "create_department_failed", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusCreated, dept)
+	apiutil.Success(c, http.StatusCreated, department)
 }
 
 func (h *OrgHandler) GetDepartments(c *gin.Context) {
-	facultyIDStr := c.Param("faculty_id")
-	facultyID, err := strconv.ParseUint(facultyIDStr, 10, 32)
+	facultyID, err := apiutil.ParseUintParam(c, "faculty_id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid faculty ID"})
+		apiutil.Error(c, http.StatusBadRequest, "invalid_faculty_id", err.Error())
 		return
 	}
 
-	depts, err := h.orgService.GetDepartments(uint(facultyID))
+	departments, err := h.orgService.GetDepartments(facultyID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusInternalServerError, "list_departments_failed", err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, depts)
+
+	apiutil.Success(c, http.StatusOK, departments)
 }
 
 func (h *OrgHandler) UpdateDepartment(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
+	id, err := apiutil.ParseUintParam(c, "id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		apiutil.Error(c, http.StatusBadRequest, "invalid_id", err.Error())
 		return
 	}
 
 	var input CreateOrgInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
 		return
 	}
 
-	dept, err := h.orgService.UpdateDepartment(uint(id), input.Name)
+	department, err := h.orgService.UpdateDepartment(id, input.Name)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusInternalServerError, "update_department_failed", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, dept)
+	apiutil.Success(c, http.StatusOK, department)
 }
 
 func (h *OrgHandler) DeleteDepartment(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
+	id, err := apiutil.ParseUintParam(c, "id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		apiutil.Error(c, http.StatusBadRequest, "invalid_id", err.Error())
 		return
 	}
 
-	if err := h.orgService.DeleteDepartment(uint(id)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.orgService.DeleteDepartment(id); err != nil {
+		apiutil.Error(c, http.StatusInternalServerError, "delete_department_failed", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusNoContent, nil)
+	apiutil.NoContent(c)
 }

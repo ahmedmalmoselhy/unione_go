@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
+	"github.com/ahmedmalmoselhy/unione_go/internal/apiutil"
+	"github.com/ahmedmalmoselhy/unione_go/internal/middlewares"
 	"github.com/ahmedmalmoselhy/unione_go/internal/models"
 	"github.com/ahmedmalmoselhy/unione_go/internal/services"
 	"github.com/gin-gonic/gin"
@@ -33,7 +34,7 @@ type RegisterInput struct {
 func (h *AuthHandler) Register(c *gin.Context) {
 	var input RegisterInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
 		return
 	}
 
@@ -46,50 +47,41 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	if err := h.authService.RegisterUser(user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusBadRequest, "registration_failed", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Registration successful"})
+	apiutil.Message(c, http.StatusCreated, "Registration successful")
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
 	var input LoginInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
 		return
 	}
 
 	token, err := h.authService.AuthenticateUser(input.Email, input.Password)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusUnauthorized, "authentication_failed", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	apiutil.Success(c, http.StatusOK, gin.H{"token": token})
 }
 
 func (h *AuthHandler) GetMe(c *gin.Context) {
-	userIDRaw, exists := c.Get("user_id")
+	userID, exists := middlewares.GetUserID(c)
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
-
-	var userID uint
-	switch v := userIDRaw.(type) {
-	case float64:
-		userID = uint(v)
-	default:
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("unexpected user_id type: %T", userIDRaw)})
+		apiutil.Error(c, http.StatusUnauthorized, "unauthorized", "Authentication required")
 		return
 	}
 
 	user, err := h.authService.GetUserByID(userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		apiutil.Error(c, http.StatusNotFound, "not_found", "User not found")
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	apiutil.Success(c, http.StatusOK, user)
 }

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -56,4 +57,16 @@ func LoadConfig() *Config {
 		SMTPPass:    os.Getenv("SMTP_PASS"),
 		SMTPFrom:    os.Getenv("SMTP_FROM"),
 	}
+}
+
+func (c *Config) Validate() error {
+	if c.DatabaseURL == "" {
+		return fmt.Errorf("database configuration is missing")
+	}
+
+	if c.JWTSecret == "" {
+		return fmt.Errorf("JWT_SECRET is required")
+	}
+
+	return nil
 }

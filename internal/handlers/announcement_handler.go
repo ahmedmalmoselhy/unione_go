@@ -3,6 +3,8 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/ahmedmalmoselhy/unione_go/internal/apiutil"
+	"github.com/ahmedmalmoselhy/unione_go/internal/middlewares"
 	"github.com/ahmedmalmoselhy/unione_go/internal/models"
 	"github.com/ahmedmalmoselhy/unione_go/internal/services"
 	"github.com/gin-gonic/gin"
@@ -27,25 +29,29 @@ type CreateAnnouncementInput struct {
 func (h *AnnouncementHandler) CreateAnnouncement(c *gin.Context) {
 	var input CreateAnnouncementInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
 		return
 	}
 
-	userID, _ := c.Get("user_id")
-	
+	userID, exists := middlewares.GetUserID(c)
+	if !exists {
+		apiutil.Error(c, http.StatusUnauthorized, "unauthorized", "Authentication required")
+		return
+	}
+
 	announcement := &models.Announcement{
 		Title:     input.Title,
 		Content:   input.Content,
 		Type:      input.Type,
 		FacultyID: input.FacultyID,
 		SectionID: input.SectionID,
-		AuthorID:  userID.(uint),
+		AuthorID:  userID,
 	}
 
 	if err := h.notifSvc.CreateAnnouncement(announcement); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusInternalServerError, "create_announcement_failed", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusCreated, announcement)
+	apiutil.Success(c, http.StatusCreated, announcement)
 }

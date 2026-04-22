@@ -11,6 +11,9 @@ import (
 
 func main() {
 	cfg := config.LoadConfig()
+	if err := cfg.Validate(); err != nil {
+		log.Fatalf("Invalid configuration: %v", err)
+	}
 
 	// Initialize DB
 	db.InitDB(cfg.DatabaseURL)

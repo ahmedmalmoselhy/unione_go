@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 
+	"github.com/ahmedmalmoselhy/unione_go/internal/apiutil"
 	"github.com/ahmedmalmoselhy/unione_go/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -29,110 +29,105 @@ type UpdateEmployeeInput struct {
 }
 
 func (h *EmployeeHandler) CreateEmployee(c *gin.Context) {
-	facultyIDStr := c.Param("faculty_id")
-	facultyID, err := strconv.ParseUint(facultyIDStr, 10, 32)
+	facultyID, err := apiutil.ParseUintParam(c, "faculty_id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid faculty ID"})
+		apiutil.Error(c, http.StatusBadRequest, "invalid_faculty_id", err.Error())
 		return
 	}
 
 	var input CreateEmployeeInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
 		return
 	}
 
-	employee, err := h.employeeService.CreateEmployee(input.Email, input.Password, input.FirstName, input.LastName, uint(facultyID))
+	employee, err := h.employeeService.CreateEmployee(input.Email, input.Password, input.FirstName, input.LastName, facultyID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusInternalServerError, "create_employee_failed", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusCreated, employee)
+	apiutil.Success(c, http.StatusCreated, employee)
 }
 
 func (h *EmployeeHandler) GetEmployees(c *gin.Context) {
-	facultyIDStr := c.Param("faculty_id")
-	facultyID, err := strconv.ParseUint(facultyIDStr, 10, 32)
+	facultyID, err := apiutil.ParseUintParam(c, "faculty_id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid faculty ID"})
+		apiutil.Error(c, http.StatusBadRequest, "invalid_faculty_id", err.Error())
 		return
 	}
 
-	employees, err := h.employeeService.GetEmployeesByFaculty(uint(facultyID))
+	employees, err := h.employeeService.GetEmployeesByFaculty(facultyID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusInternalServerError, "list_employees_failed", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, employees)
+	apiutil.Success(c, http.StatusOK, employees)
 }
 
 func (h *EmployeeHandler) UpdateEmployee(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
+	id, err := apiutil.ParseUintParam(c, "id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid employee ID"})
+		apiutil.Error(c, http.StatusBadRequest, "invalid_employee_id", err.Error())
 		return
 	}
 
 	var input UpdateEmployeeInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
 		return
 	}
 
-	employee, err := h.employeeService.UpdateEmployee(uint(id), input.FirstName, input.LastName)
+	employee, err := h.employeeService.UpdateEmployee(id, input.FirstName, input.LastName)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusInternalServerError, "update_employee_failed", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, employee)
+	apiutil.Success(c, http.StatusOK, employee)
 }
 
 func (h *EmployeeHandler) ImportStudents(c *gin.Context) {
-	facultyIDStr := c.Param("faculty_id")
-	facultyID, err := strconv.ParseUint(facultyIDStr, 10, 32)
+	facultyID, err := apiutil.ParseUintParam(c, "faculty_id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid faculty ID"})
+		apiutil.Error(c, http.StatusBadRequest, "invalid_faculty_id", err.Error())
 		return
 	}
 
 	file, err := c.FormFile("file")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No file uploaded"})
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", "No file uploaded")
 		return
 	}
 
 	openedFile, err := file.Open()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open file"})
+		apiutil.Error(c, http.StatusInternalServerError, "file_open_failed", "Failed to open file")
 		return
 	}
 	defer openedFile.Close()
 
-	count, err := h.employeeService.ImportStudentsFromExcel(openedFile, uint(facultyID))
+	count, err := h.employeeService.ImportStudentsFromExcel(openedFile, facultyID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apiutil.Error(c, http.StatusInternalServerError, "student_import_failed", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"imported_count": count})
+	apiutil.Success(c, http.StatusOK, gin.H{"imported_count": count})
 }
 
 func (h *EmployeeHandler) DeleteEmployee(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
+	id, err := apiutil.ParseUintParam(c, "id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid employee ID"})
+		apiutil.Error(c, http.StatusBadRequest, "invalid_employee_id", err.Error())
 		return
 	}
 
-	if err := h.employeeService.DeleteEmployee(uint(id)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := h.employeeService.DeleteEmployee(id); err != nil {
+		apiutil.Error(c, http.StatusInternalServerError, "delete_employee_failed", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusNoContent, nil)
+	apiutil.NoContent(c)
 }
