@@ -131,6 +131,14 @@ Admin routes are currently mounted under `/api/v1/admin`.
 - `PUT /professors/:id`
 - `DELETE /professors/:id`
 
+### Employees
+
+- `GET /employees`
+- `POST /employees`
+- `GET /employees/:id`
+- `PUT /employees/:id`
+- `DELETE /employees/:id`
+
 ## Notes
 
 - Several handlers exist for terms, courses, sections, enrollments, and grade updates, but they are not all mounted in the current router.

@@ -14,7 +14,10 @@ import (
 type EmployeeService interface {
 	CreateEmployee(email, password, firstName, lastName string, facultyID uint) (*models.User, error)
 	GetEmployeesByFaculty(facultyID uint) ([]models.User, error)
+	ListEmployees(facultyID *uint) ([]models.User, error)
+	GetEmployee(id uint) (*models.User, error)
 	UpdateEmployee(id uint, firstName, lastName string) (*models.User, error)
+	UpdateEmployeeDetails(id uint, firstName, lastName string, facultyID uint) (*models.User, error)
 	DeleteEmployee(id uint) error
 	ImportStudentsFromExcel(file io.Reader, facultyID uint) (int, error)
 }
@@ -34,12 +37,12 @@ func (s *employeeService) CreateEmployee(email, password, firstName, lastName st
 	}
 
 	user := &models.User{
-		Email:        email,
-		Password:     string(hashedPassword),
-		FirstName:    firstName,
-		LastName:     lastName,
-		Role:         models.RoleEmployee,
-		FacultyID:    &facultyID,
+		Email:     email,
+		Password:  string(hashedPassword),
+		FirstName: firstName,
+		LastName:  lastName,
+		Role:      models.RoleEmployee,
+		FacultyID: &facultyID,
 	}
 
 	if err := s.userRepo.CreateUser(user); err != nil {
@@ -53,7 +56,15 @@ func (s *employeeService) GetEmployeesByFaculty(facultyID uint) ([]models.User, 
 	return s.userRepo.FindEmployeesByFaculty(facultyID)
 }
 
-func (s *employeeService) UpdateEmployee(id uint, firstName, lastName string) (*models.User, error) {
+func (s *employeeService) ListEmployees(facultyID *uint) ([]models.User, error) {
+	role := models.RoleEmployee
+	return s.userRepo.FindUsers(repository.UserFilter{
+		Role:      &role,
+		FacultyID: facultyID,
+	})
+}
+
+func (s *employeeService) GetEmployee(id uint) (*models.User, error) {
 	user, err := s.userRepo.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -61,6 +72,15 @@ func (s *employeeService) UpdateEmployee(id uint, firstName, lastName string) (*
 
 	if user.Role != models.RoleEmployee {
 		return nil, errors.New("user is not an employee")
+	}
+
+	return user, nil
+}
+
+func (s *employeeService) UpdateEmployee(id uint, firstName, lastName string) (*models.User, error) {
+	user, err := s.GetEmployee(id)
+	if err != nil {
+		return nil, err
 	}
 
 	user.FirstName = firstName
@@ -73,14 +93,26 @@ func (s *employeeService) UpdateEmployee(id uint, firstName, lastName string) (*
 	return user, nil
 }
 
-func (s *employeeService) DeleteEmployee(id uint) error {
-	user, err := s.userRepo.FindByID(id)
+func (s *employeeService) UpdateEmployeeDetails(id uint, firstName, lastName string, facultyID uint) (*models.User, error) {
+	user, err := s.GetEmployee(id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if user.Role != models.RoleEmployee {
-		return errors.New("user is not an employee")
+	user.FirstName = firstName
+	user.LastName = lastName
+	user.FacultyID = &facultyID
+
+	if err := s.userRepo.UpdateUser(user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (s *employeeService) DeleteEmployee(id uint) error {
+	if _, err := s.GetEmployee(id); err != nil {
+		return err
 	}
 
 	return s.userRepo.DeleteUser(id)

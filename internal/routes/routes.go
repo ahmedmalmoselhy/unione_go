@@ -157,6 +157,12 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			admin.GET("/professors/:id", professorHandler.GetProfessor)
 			admin.PUT("/professors/:id", professorHandler.UpdateProfessor)
 			admin.DELETE("/professors/:id", professorHandler.DeleteProfessor)
+
+			admin.GET("/employees", employeeHandler.ListEmployees)
+			admin.POST("/employees", employeeHandler.AdminCreateEmployee)
+			admin.GET("/employees/:id", employeeHandler.GetEmployee)
+			admin.PUT("/employees/:id", employeeHandler.AdminUpdateEmployee)
+			admin.DELETE("/employees/:id", employeeHandler.DeleteEmployee)
 		}
 	}
 

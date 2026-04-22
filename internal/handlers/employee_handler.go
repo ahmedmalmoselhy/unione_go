@@ -28,6 +28,20 @@ type UpdateEmployeeInput struct {
 	LastName  string `json:"last_name" binding:"required"`
 }
 
+type AdminCreateEmployeeInput struct {
+	Email     string `json:"email" binding:"required,email"`
+	Password  string `json:"password" binding:"required,min=6"`
+	FirstName string `json:"first_name" binding:"required"`
+	LastName  string `json:"last_name" binding:"required"`
+	FacultyID uint   `json:"faculty_id" binding:"required"`
+}
+
+type AdminUpdateEmployeeInput struct {
+	FirstName string `json:"first_name" binding:"required"`
+	LastName  string `json:"last_name" binding:"required"`
+	FacultyID uint   `json:"faculty_id" binding:"required"`
+}
+
 func (h *EmployeeHandler) CreateEmployee(c *gin.Context) {
 	facultyID, err := apiutil.ParseUintParam(c, "faculty_id")
 	if err != nil {
@@ -130,4 +144,78 @@ func (h *EmployeeHandler) DeleteEmployee(c *gin.Context) {
 	}
 
 	apiutil.NoContent(c)
+}
+
+func (h *EmployeeHandler) ListEmployees(c *gin.Context) {
+	var facultyID *uint
+	if c.Query("faculty_id") != "" {
+		value, err := apiutil.ParseRequiredUintQuery(c, "faculty_id")
+		if err != nil {
+			apiutil.Error(c, http.StatusBadRequest, "invalid_faculty_id", err.Error())
+			return
+		}
+		facultyID = &value
+	}
+
+	employees, err := h.employeeService.ListEmployees(facultyID)
+	if err != nil {
+		apiutil.Error(c, http.StatusInternalServerError, "list_employees_failed", err.Error())
+		return
+	}
+
+	apiutil.Success(c, http.StatusOK, employees)
+}
+
+func (h *EmployeeHandler) GetEmployee(c *gin.Context) {
+	id, err := apiutil.ParseUintParam(c, "id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_employee_id", err.Error())
+		return
+	}
+
+	employee, err := h.employeeService.GetEmployee(id)
+	if err != nil {
+		apiutil.Error(c, http.StatusNotFound, "employee_not_found", err.Error())
+		return
+	}
+
+	apiutil.Success(c, http.StatusOK, employee)
+}
+
+func (h *EmployeeHandler) AdminCreateEmployee(c *gin.Context) {
+	var input AdminCreateEmployeeInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
+		return
+	}
+
+	employee, err := h.employeeService.CreateEmployee(input.Email, input.Password, input.FirstName, input.LastName, input.FacultyID)
+	if err != nil {
+		apiutil.Error(c, http.StatusInternalServerError, "create_employee_failed", err.Error())
+		return
+	}
+
+	apiutil.Success(c, http.StatusCreated, employee)
+}
+
+func (h *EmployeeHandler) AdminUpdateEmployee(c *gin.Context) {
+	id, err := apiutil.ParseUintParam(c, "id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_employee_id", err.Error())
+		return
+	}
+
+	var input AdminUpdateEmployeeInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
+		return
+	}
+
+	employee, err := h.employeeService.UpdateEmployeeDetails(id, input.FirstName, input.LastName, input.FacultyID)
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "update_employee_failed", err.Error())
+		return
+	}
+
+	apiutil.Success(c, http.StatusOK, employee)
 }
