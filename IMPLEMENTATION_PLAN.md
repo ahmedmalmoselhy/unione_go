@@ -66,6 +66,7 @@ The Go backend is considered on par when it provides:
 Purpose: make the current codebase safe to build on.
 
 Deliverables:
+
 - standardize all public routes under `/api/v1`
 - normalize request validation and error responses
 - standardize auth context extraction from middleware
@@ -75,6 +76,7 @@ Deliverables:
 - document route conventions and response format
 
 Exit criteria:
+
 - one consistent API structure
 - no handler-specific ad hoc response format
 - middleware contract is stable enough for broader route expansion
@@ -84,6 +86,7 @@ Exit criteria:
 Purpose: complete the base academic model before portal features expand.
 
 Deliverables:
+
 - expose and complete academic term endpoints
 - expose and complete course endpoints
 - expose and complete section endpoints
@@ -95,6 +98,7 @@ Deliverables:
 - implement prerequisite validation
 
 Exit criteria:
+
 - terms, courses, sections, enrollments, and grading have a stable public API
 - academic models support later student/professor/admin features without major redesign
 
@@ -103,6 +107,7 @@ Exit criteria:
 Purpose: complete the core identity-linked entities used across the product.
 
 Deliverables:
+
 - student CRUD
 - professor CRUD
 - extend employee management where needed for parity
@@ -110,6 +115,7 @@ Deliverables:
 - organization-aware filtering for all people endpoints
 
 Exit criteria:
+
 - admins can manage students, professors, and employees through stable APIs
 - people records are correctly linked to organization structure and users
 
@@ -118,6 +124,7 @@ Exit criteria:
 Purpose: deliver the student backend surface expected in the mature ports.
 
 Deliverables:
+
 - student profile endpoint
 - enrollments list/create/drop
 - transcript JSON
@@ -130,6 +137,7 @@ Deliverables:
 - course rating flows
 
 Exit criteria:
+
 - the student route group covers the major self-service academic flows
 - enrollment rules behave consistently with the mature ports
 
@@ -138,6 +146,7 @@ Exit criteria:
 Purpose: deliver the professor-facing academic operations.
 
 Deliverables:
+
 - professor profile endpoint
 - professor section list
 - section student roster
@@ -147,6 +156,7 @@ Deliverables:
 - professor schedule
 
 Exit criteria:
+
 - the professor route group supports grading, attendance, and section communication
 
 ### Phase 5: Admin Academic Management
@@ -154,6 +164,7 @@ Exit criteria:
 Purpose: close the biggest parity gap with the completed ports.
 
 Deliverables:
+
 - admin CRUD for faculties, departments, courses, sections, academic terms
 - teaching assistant assignment endpoints
 - exam schedule show/create/update/publish
@@ -162,6 +173,7 @@ Deliverables:
 - admin dashboard summary endpoints if required for parity
 
 Exit criteria:
+
 - admin APIs can manage the academic structure and operational workflows without relying on unfinished ad hoc routes
 
 ### Phase 6: Communication, Notifications, and Delivery
@@ -169,6 +181,7 @@ Exit criteria:
 Purpose: support the user-facing workflows triggered by announcements, grades, and exam publication.
 
 Deliverables:
+
 - shared announcements list and read-tracking
 - notifications inbox, mark-read, mark-all-read, delete
 - email dispatch integration for announcements, exams, and grades
@@ -176,6 +189,7 @@ Deliverables:
 - section-scoped and faculty/global announcement targeting
 
 Exit criteria:
+
 - communication flows support both in-app and async delivery behavior
 
 ### Phase 7: Documents, Imports, and Exports
@@ -183,6 +197,7 @@ Exit criteria:
 Purpose: match the operational capabilities of the mature ports.
 
 Deliverables:
+
 - refine student Excel import
 - refine professor grade import
 - export endpoints for students, professors, employees, enrollments, and grades
@@ -190,6 +205,7 @@ Deliverables:
 - reusable import/export services and templates
 
 Exit criteria:
+
 - admins and professors can import/export key academic data through stable APIs
 
 ### Phase 8: Audit, Webhooks, and Governance
@@ -197,6 +213,7 @@ Exit criteria:
 Purpose: make the backend operationally comparable to the completed ports.
 
 Deliverables:
+
 - audit logging middleware or service
 - audit log query endpoints
 - webhook registration and ownership checks
@@ -205,6 +222,7 @@ Deliverables:
 - auto-disable logic for repeated failures
 
 Exit criteria:
+
 - important mutations are auditable
 - external integrations can subscribe to supported events safely
 
@@ -213,6 +231,7 @@ Exit criteria:
 Purpose: move from feature-complete to deployment-ready.
 
 Deliverables:
+
 - rate limiting
 - health and monitoring endpoints
 - config validation
@@ -222,6 +241,7 @@ Deliverables:
 - CI pipeline
 
 Exit criteria:
+
 - operational controls exist for running the service outside local development
 
 ### Phase 10: Testing and Validation
@@ -229,6 +249,7 @@ Exit criteria:
 Purpose: prove parity instead of assuming it.
 
 Deliverables:
+
 - unit tests for services and repositories
 - handler tests for auth, student, professor, shared, and admin domains
 - integration tests for enrollment, grading, exams, imports, waitlist, announcements, and webhooks
@@ -236,6 +257,7 @@ Deliverables:
 - docs refresh after implementation
 
 Exit criteria:
+
 - the Go port has meaningful automated confidence and a documented parity checklist
 
 ## Recommended Execution Order
@@ -267,6 +289,7 @@ That work unlocks almost every later phase.
 ## Working Checklist
 
 ### Phase 0
+
 - [ ] Standardize `/api/v1` route layout
 - [ ] Normalize error response shape
 - [ ] Normalize success response shape where needed
@@ -276,6 +299,7 @@ That work unlocks almost every later phase.
 - [ ] Document API conventions
 
 ### Phase 1
+
 - [ ] Expose term endpoints
 - [ ] Expose course endpoints
 - [ ] Expose section endpoints
@@ -287,12 +311,14 @@ That work unlocks almost every later phase.
 - [ ] Add schedule support
 
 ### Phase 2
+
 - [ ] Add student CRUD
 - [ ] Add professor CRUD
 - [ ] Complete employee parity gaps
 - [ ] Add student transfer/history
 
 ### Phase 3
+
 - [ ] Student profile
 - [ ] Student enrollments
 - [ ] Student transcript
@@ -304,6 +330,7 @@ That work unlocks almost every later phase.
 - [ ] Student ratings
 
 ### Phase 4
+
 - [ ] Professor profile
 - [ ] Professor sections
 - [ ] Professor section students
@@ -313,6 +340,7 @@ That work unlocks almost every later phase.
 - [ ] Professor schedule
 
 ### Phase 5
+
 - [ ] Admin academic terms
 - [ ] Admin courses
 - [ ] Admin sections
@@ -323,6 +351,7 @@ That work unlocks almost every later phase.
 - [ ] Admin imports/templates
 
 ### Phase 6
+
 - [ ] Shared announcements list/read
 - [ ] Notifications inbox
 - [ ] Mark read / mark all read
@@ -331,6 +360,7 @@ That work unlocks almost every later phase.
 - [ ] Background delivery workflow
 
 ### Phase 7
+
 - [ ] Students import hardening
 - [ ] Grades import hardening
 - [ ] Export endpoints
@@ -338,6 +368,7 @@ That work unlocks almost every later phase.
 - [ ] Import/export templates
 
 ### Phase 8
+
 - [ ] Audit log model/service
 - [ ] Audit log endpoints
 - [ ] Webhook registration
@@ -346,6 +377,7 @@ That work unlocks almost every later phase.
 - [ ] Retry and disable policy
 
 ### Phase 9
+
 - [ ] Rate limiting
 - [ ] Health/monitoring improvements
 - [ ] Config validation
@@ -354,6 +386,7 @@ That work unlocks almost every later phase.
 - [ ] CI pipeline
 
 ### Phase 10
+
 - [ ] Unit tests
 - [ ] Handler tests
 - [ ] Integration tests
@@ -375,4 +408,3 @@ When a phase is completed:
 2. update `API_ENDPOINTS.md`
 3. update `Enhancements.md`
 4. update central `UniOne` docs if the public status meaningfully changed
-
