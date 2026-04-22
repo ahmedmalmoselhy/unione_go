@@ -22,6 +22,7 @@ The Go port has working foundations in auth, organization management, employee m
 - [x] Departments CRUD
 - [x] Employee CRUD by faculty
 - [x] Student CRUD
+- [x] Professor CRUD
 - [x] Student Excel import through employee flows
 
 ### Academic subset

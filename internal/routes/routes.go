@@ -33,6 +33,9 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	studentService := services.NewStudentService(userRepo, orgRepo)
 	studentHandler := handlers.NewStudentHandler(studentService)
 
+	professorService := services.NewProfessorService(userRepo, orgRepo)
+	professorHandler := handlers.NewProfessorHandler(professorService)
+
 	annRepo := repository.NewAnnouncementRepository(db)
 	academicRepo := repository.NewAcademicRepository(db)
 
@@ -148,6 +151,12 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			admin.GET("/students/:id", studentHandler.GetStudent)
 			admin.PUT("/students/:id", studentHandler.UpdateStudent)
 			admin.DELETE("/students/:id", studentHandler.DeleteStudent)
+
+			admin.GET("/professors", professorHandler.ListProfessors)
+			admin.POST("/professors", professorHandler.CreateProfessor)
+			admin.GET("/professors/:id", professorHandler.GetProfessor)
+			admin.PUT("/professors/:id", professorHandler.UpdateProfessor)
+			admin.DELETE("/professors/:id", professorHandler.DeleteProfessor)
 		}
 	}
 

@@ -18,6 +18,7 @@ The Go port is beyond initialization and has a working backend foundation, but i
 | Organization management | Implemented baseline | Universities, faculties, and departments CRUD routes |
 | Employee management | Implemented baseline | Faculty employee CRUD plus student Excel import |
 | Student management | Implemented baseline | Admin student CRUD with faculty and department assignment |
+| Professor management | Implemented baseline | Admin professor CRUD with faculty and department assignment |
 | Academic operations | Expanded baseline | Terms, courses, sections, enrollments, grade updates, attendance, GPA, exams |
 | Announcements | Partial | Announcement creation route with notification service |
 | Student/professor/admin portals | Not yet broad | No mature portal-style route surface comparable to other ports |
@@ -40,7 +41,7 @@ The Go port is beyond initialization and has a working backend foundation, but i
 
 ## Main Gaps
 
-1. Add professor CRUD and student transfer/history.
+1. Complete employee parity gaps and student transfer/history.
 2. Expand broader student, professor, and admin route groups.
 3. Implement webhooks, analytics, exports, and stronger notification coverage.
 4. Add automated tests and fuller API documentation.
