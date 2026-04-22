@@ -30,6 +30,9 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	employeeService := services.NewEmployeeService(userRepo)
 	employeeHandler := handlers.NewEmployeeHandler(employeeService)
 
+	studentService := services.NewStudentService(userRepo, orgRepo)
+	studentHandler := handlers.NewStudentHandler(studentService)
+
 	annRepo := repository.NewAnnouncementRepository(db)
 	academicRepo := repository.NewAcademicRepository(db)
 
@@ -136,6 +139,15 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		announcements := v1.Group("/announcements", middlewares.AuthMiddleware(cfg.JWTSecret))
 		{
 			announcements.POST("/", middlewares.RequireRole("admin", "employee", "professor"), annHandler.CreateAnnouncement)
+		}
+
+		admin := v1.Group("/admin", middlewares.AuthMiddleware(cfg.JWTSecret), middlewares.RequireRole("admin", "employee"))
+		{
+			admin.GET("/students", studentHandler.ListStudents)
+			admin.POST("/students", studentHandler.CreateStudent)
+			admin.GET("/students/:id", studentHandler.GetStudent)
+			admin.PUT("/students/:id", studentHandler.UpdateStudent)
+			admin.DELETE("/students/:id", studentHandler.DeleteStudent)
 		}
 	}
 

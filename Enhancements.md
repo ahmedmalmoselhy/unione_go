@@ -21,6 +21,7 @@ The Go port has working foundations in auth, organization management, employee m
 - [x] Faculties CRUD
 - [x] Departments CRUD
 - [x] Employee CRUD by faculty
+- [x] Student CRUD
 - [x] Student Excel import through employee flows
 
 ### Academic subset
@@ -49,6 +50,7 @@ The Go port has working foundations in auth, organization management, employee m
 - Broad student portal API
 - Broad professor portal API
 - Broad admin CRUD API beyond the academic baseline
+- Student transfer and history
 - Webhooks
 - Analytics and reporting
 - Export flows

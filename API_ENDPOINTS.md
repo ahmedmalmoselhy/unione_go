@@ -111,6 +111,18 @@ Academic routes are mounted under `/api/v1/academic`.
 
 - `POST /api/v1/announcements/`
 
+## Admin
+
+Admin routes are currently mounted under `/api/v1/admin`.
+
+### Students
+
+- `GET /students`
+- `POST /students`
+- `GET /students/:id`
+- `PUT /students/:id`
+- `DELETE /students/:id`
+
 ## Notes
 
 - Several handlers exist for terms, courses, sections, enrollments, and grade updates, but they are not all mounted in the current router.

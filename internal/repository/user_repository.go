@@ -5,11 +5,18 @@ import (
 	"gorm.io/gorm"
 )
 
+type UserFilter struct {
+	Role         *models.Role
+	FacultyID    *uint
+	DepartmentID *uint
+}
+
 type UserRepository interface {
 	CreateUser(user *models.User) error
 	FindByEmail(email string) (*models.User, error)
 	FindByID(id uint) (*models.User, error)
 	FindEmployeesByFaculty(facultyID uint) ([]models.User, error)
+	FindUsers(filter UserFilter) ([]models.User, error)
 	UpdateUser(user *models.User) error
 	DeleteUser(id uint) error
 }
@@ -45,6 +52,24 @@ func (r *userRepository) FindByID(id uint) (*models.User, error) {
 func (r *userRepository) FindEmployeesByFaculty(facultyID uint) ([]models.User, error) {
 	var users []models.User
 	err := r.db.Where("role = ? AND faculty_id = ?", models.RoleEmployee, facultyID).Find(&users).Error
+	return users, err
+}
+
+func (r *userRepository) FindUsers(filter UserFilter) ([]models.User, error) {
+	var users []models.User
+
+	query := r.db.Model(&models.User{})
+	if filter.Role != nil {
+		query = query.Where("role = ?", *filter.Role)
+	}
+	if filter.FacultyID != nil {
+		query = query.Where("faculty_id = ?", *filter.FacultyID)
+	}
+	if filter.DepartmentID != nil {
+		query = query.Where("department_id = ?", *filter.DepartmentID)
+	}
+
+	err := query.Find(&users).Error
 	return users, err
 }
 
