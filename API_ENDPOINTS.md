@@ -52,6 +52,43 @@ All organization routes are mounted under `/api/v1/organizations` and require au
 
 Academic routes are mounted under `/api/v1/academic`.
 
+### Terms
+
+- `GET /terms`
+- `POST /terms`
+- `GET /terms/:id`
+- `PUT /terms/:id`
+- `DELETE /terms/:id`
+
+### Courses
+
+- `GET /courses?department_id=:department_id`
+- `POST /courses`
+- `GET /courses/:id`
+- `PUT /courses/:id`
+- `DELETE /courses/:id`
+
+### Sections
+
+- `GET /sections?course_id=:course_id`
+- `GET /sections?academic_term_id=:academic_term_id`
+- `GET /sections?professor_id=:professor_id`
+- `POST /sections`
+- `GET /sections/:id`
+- `PUT /sections/:id`
+- `DELETE /sections/:id`
+
+### Enrollments
+
+- `POST /sections/:section_id/enrollments`
+- `GET /sections/:section_id/enrollments`
+- `DELETE /sections/:section_id/enrollments/:student_id`
+- `GET /students/:student_id/enrollments`
+
+### Grades
+
+- `PATCH /sections/:section_id/students/:student_id/grade`
+
 ### Attendance
 
 - `POST /sections/:section_id/attendance`
@@ -77,4 +114,5 @@ Academic routes are mounted under `/api/v1/academic`.
 ## Notes
 
 - Several handlers exist for terms, courses, sections, enrollments, and grade updates, but they are not all mounted in the current router.
+- Course prerequisites are now modeled and enforced during enrollment when prerequisite grades are available.
 - This document reflects exposed routes, not every handler present in the codebase.

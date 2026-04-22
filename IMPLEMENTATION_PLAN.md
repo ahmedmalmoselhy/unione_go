@@ -290,25 +290,25 @@ That work unlocks almost every later phase.
 
 ### Phase 0
 
-- [ ] Standardize `/api/v1` route layout
-- [ ] Normalize error response shape
-- [ ] Normalize success response shape where needed
-- [ ] Verify JWT middleware context contract
-- [ ] Verify role/scope middleware contract
-- [ ] Add structured logging baseline
-- [ ] Document API conventions
+- [x] Standardize `/api/v1` route layout
+- [x] Normalize error response shape
+- [x] Normalize success response shape where needed
+- [x] Verify JWT middleware context contract
+- [x] Verify role/scope middleware contract
+- [x] Add structured logging baseline
+- [x] Document API conventions
 
 ### Phase 1
 
-- [ ] Expose term endpoints
-- [ ] Expose course endpoints
-- [ ] Expose section endpoints
-- [ ] Expose enrollment endpoints
-- [ ] Expose grade update endpoint
-- [ ] Add professor assignment support
-- [ ] Add prerequisite enforcement
-- [ ] Add capacity enforcement
-- [ ] Add schedule support
+- [x] Expose term endpoints
+- [x] Expose course endpoints
+- [x] Expose section endpoints
+- [x] Expose enrollment endpoints
+- [x] Expose grade update endpoint
+- [x] Add professor assignment support
+- [x] Add prerequisite enforcement
+- [x] Add capacity enforcement
+- [x] Add schedule support
 
 ### Phase 2
 

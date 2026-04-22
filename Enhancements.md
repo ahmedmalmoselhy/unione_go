@@ -1,7 +1,7 @@
 # UniOne Go - Enhancements
 
 Last Updated: April 21, 2026
-Current Status: Partial backend foundation implemented
+Current Status: Phase 1 core academic CRUD baseline implemented
 Implementation: Go (Gin + GORM)
 
 ## Overview
@@ -24,6 +24,11 @@ The Go port has working foundations in auth, organization management, employee m
 - [x] Student Excel import through employee flows
 
 ### Academic subset
+- [x] Academic terms CRUD
+- [x] Courses CRUD with prerequisite relationships
+- [x] Sections CRUD with professor assignment support
+- [x] Enrollment create/list/drop endpoints
+- [x] Grade update endpoint
 - [x] Attendance recording
 - [x] Attendance lookup by section/date
 - [x] GPA lookup
@@ -43,7 +48,7 @@ The Go port has working foundations in auth, organization management, employee m
 
 - Broad student portal API
 - Broad professor portal API
-- Broad admin CRUD API
+- Broad admin CRUD API beyond the academic baseline
 - Webhooks
 - Analytics and reporting
 - Export flows
@@ -52,7 +57,7 @@ The Go port has working foundations in auth, organization management, employee m
 
 ## Next Steps
 
-1. Expose the existing academic handlers through a fuller public route surface.
-2. Add student, professor, and admin route groups that match the implemented domain model.
+1. Add dedicated student, professor, and admin route groups that build on the new academic baseline.
+2. Implement shared notifications and richer announcement read/list flows.
 3. Implement webhooks, analytics, exports, and richer notification flows.
 4. Add Swagger/OpenAPI and automated tests.

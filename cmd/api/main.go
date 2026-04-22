@@ -28,6 +28,7 @@ func main() {
 			&models.User{},
 			&models.AcademicTerm{},
 			&models.Course{},
+			&models.CoursePrerequisite{},
 			&models.Section{},
 			&models.Enrollment{},
 			&models.Attendance{},

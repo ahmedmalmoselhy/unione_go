@@ -93,7 +93,30 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		// Academic Catalog & Enrollments
 		academic := v1.Group("/academic", middlewares.AuthMiddleware(cfg.JWTSecret))
 		{
-			// ... (keep existing routes)
+			academic.GET("/terms", academicHandler.GetTerms)
+			academic.POST("/terms", middlewares.RequireRole("admin", "employee"), academicHandler.CreateTerm)
+			academic.GET("/terms/:id", academicHandler.GetTerm)
+			academic.PUT("/terms/:id", middlewares.RequireRole("admin", "employee"), academicHandler.UpdateTerm)
+			academic.DELETE("/terms/:id", middlewares.RequireRole("admin"), academicHandler.DeleteTerm)
+
+			academic.GET("/courses", academicHandler.GetCourses)
+			academic.POST("/courses", middlewares.RequireRole("admin", "employee"), academicHandler.CreateCourse)
+			academic.GET("/courses/:id", academicHandler.GetCourse)
+			academic.PUT("/courses/:id", middlewares.RequireRole("admin", "employee"), academicHandler.UpdateCourse)
+			academic.DELETE("/courses/:id", middlewares.RequireRole("admin"), academicHandler.DeleteCourse)
+
+			academic.GET("/sections", academicHandler.GetSections)
+			academic.POST("/sections", middlewares.RequireRole("admin", "employee"), academicHandler.CreateSection)
+			academic.GET("/sections/:id", academicHandler.GetSection)
+			academic.PUT("/sections/:id", middlewares.RequireRole("admin", "employee"), academicHandler.UpdateSection)
+			academic.DELETE("/sections/:id", middlewares.RequireRole("admin"), academicHandler.DeleteSection)
+
+			academic.POST("/sections/:section_id/enrollments", middlewares.RequireRole("admin", "employee"), academicHandler.Enroll)
+			academic.GET("/sections/:section_id/enrollments", middlewares.RequireRole("admin", "employee", "professor"), academicHandler.GetSectionEnrollments)
+			academic.DELETE("/sections/:section_id/enrollments/:student_id", middlewares.RequireRole("admin", "employee"), academicHandler.DropSection)
+			academic.GET("/students/:student_id/enrollments", middlewares.RequireRole("admin", "employee", "student"), academicHandler.GetStudentEnrollments)
+			academic.PATCH("/sections/:section_id/students/:student_id/grade", middlewares.RequireRole("admin", "professor"), academicHandler.UpdateGrade)
+
 			// Attendance
 			academic.POST("/sections/:section_id/attendance", middlewares.RequireRole("admin", "professor"), academicHandler.RecordAttendance)
 			academic.GET("/sections/:section_id/attendance", middlewares.RequireRole("admin", "professor"), academicHandler.GetSectionAttendance)

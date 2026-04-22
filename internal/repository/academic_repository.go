@@ -19,6 +19,7 @@ type AcademicRepository interface {
 	CreateCourse(course *models.Course) error
 	GetCoursesByDepartment(deptID uint) ([]models.Course, error)
 	GetCourseByID(id uint) (*models.Course, error)
+	SetCoursePrerequisites(courseID uint, prerequisiteIDs []uint) error
 	UpdateCourse(course *models.Course) error
 	DeleteCourse(id uint) error
 
@@ -89,14 +90,35 @@ func (r *academicRepository) CreateCourse(course *models.Course) error {
 
 func (r *academicRepository) GetCoursesByDepartment(deptID uint) ([]models.Course, error) {
 	var courses []models.Course
-	err := r.db.Where("department_id = ?", deptID).Find(&courses).Error
+	err := r.db.Preload("Prerequisites").Where("department_id = ?", deptID).Find(&courses).Error
 	return courses, err
 }
 
 func (r *academicRepository) GetCourseByID(id uint) (*models.Course, error) {
 	var course models.Course
-	err := r.db.First(&course, id).Error
+	err := r.db.Preload("Prerequisites").First(&course, id).Error
 	return &course, err
+}
+
+func (r *academicRepository) SetCoursePrerequisites(courseID uint, prerequisiteIDs []uint) error {
+	course, err := r.GetCourseByID(courseID)
+	if err != nil {
+		return err
+	}
+
+	if len(prerequisiteIDs) == 0 {
+		return r.db.Model(course).Association("Prerequisites").Clear()
+	}
+
+	var prerequisites []models.Course
+	if err := r.db.Where("id IN ?", prerequisiteIDs).Find(&prerequisites).Error; err != nil {
+		return err
+	}
+	if len(prerequisites) != len(prerequisiteIDs) {
+		return gorm.ErrRecordNotFound
+	}
+
+	return r.db.Model(course).Association("Prerequisites").Replace(&prerequisites)
 }
 
 func (r *academicRepository) UpdateCourse(course *models.Course) error {
@@ -114,13 +136,13 @@ func (r *academicRepository) CreateSection(section *models.Section) error {
 
 func (r *academicRepository) GetSectionsByCourse(courseID uint) ([]models.Section, error) {
 	var sections []models.Section
-	err := r.db.Where("course_id = ?", courseID).Find(&sections).Error
+	err := r.db.Preload("Course").Preload("Course.Prerequisites").Preload("AcademicTerm").Preload("Professor").Where("course_id = ?", courseID).Find(&sections).Error
 	return sections, err
 }
 
 func (r *academicRepository) GetSectionsByTerm(termID uint) ([]models.Section, error) {
 	var sections []models.Section
-	err := r.db.Where("academic_term_id = ?", termID).Find(&sections).Error
+	err := r.db.Preload("Course").Preload("Course.Prerequisites").Preload("AcademicTerm").Preload("Professor").Where("academic_term_id = ?", termID).Find(&sections).Error
 	return sections, err
 }
 
@@ -132,7 +154,7 @@ func (r *academicRepository) GetSectionsByProfessor(profID uint) ([]models.Secti
 
 func (r *academicRepository) GetSectionByID(id uint) (*models.Section, error) {
 	var section models.Section
-	err := r.db.Preload("Course").Preload("AcademicTerm").First(&section, id).Error
+	err := r.db.Preload("Course").Preload("Course.Prerequisites").Preload("AcademicTerm").Preload("Professor").First(&section, id).Error
 	return &section, err
 }
 
