@@ -319,15 +319,15 @@ That work unlocks almost every later phase.
 
 ### Phase 3
 
-- [ ] Student profile
-- [ ] Student enrollments
-- [ ] Student transcript
-- [ ] Student academic history
-- [ ] Student schedule
-- [ ] Student ICS export
-- [ ] Student attendance summary
-- [ ] Student waitlist
-- [ ] Student ratings
+- [x] Student profile
+- [x] Student enrollments
+- [x] Student transcript
+- [x] Student academic history
+- [x] Student schedule
+- [x] Student ICS export
+- [x] Student attendance summary
+- [x] Student waitlist
+- [x] Student ratings
 
 ### Phase 4
 

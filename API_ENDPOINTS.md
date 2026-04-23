@@ -141,6 +141,22 @@ Admin routes are currently mounted under `/api/v1/admin`.
 - `PUT /employees/:id`
 - `DELETE /employees/:id`
 
+## Student Portal
+
+Student portal routes are mounted under `/api/v1/student` and require a `student` role.
+
+- `GET /profile`
+- `GET /enrollments`
+- `GET /transcript`
+- `GET /academic-history`
+- `GET /schedule`
+- `GET /schedule/export`
+- `GET /attendance`
+- `GET /waitlist`
+- `POST /waitlist`
+- `DELETE /waitlist/:id`
+- `POST /courses/:course_id/rate`
+
 ## Notes
 
 - Several handlers exist for terms, courses, sections, enrollments, and grade updates, but they are not all mounted in the current router.

@@ -1,12 +1,12 @@
 # UniOne Go - Current Status
 
-Last Updated: April 21, 2026
-Project Phase: Phase 1 core academic CRUD completed
+Last Updated: April 23, 2026
+Project Phase: Phase 3 Student Domain completed
 Overall Status: ACTIVE DEVELOPMENT
 
 ## Summary
 
-The Go port is beyond initialization and has a working backend foundation, but it is not yet near parity with the mature UniOne ports.
+The Go port is rapidly moving towards parity. Phase 3 (Student Domain) is now complete, providing a full self-service portal for students.
 
 ## Verified Implementation Progress
 
@@ -17,11 +17,11 @@ The Go port is beyond initialization and has a working backend foundation, but i
 | API conventions | Implemented baseline | `/api/v1` health route, normalized error envelopes, request logging, validated config |
 | Organization management | Implemented baseline | Universities, faculties, and departments CRUD routes |
 | Employee management | Expanded baseline | Faculty employee CRUD, admin employee CRUD, optional faculty filtering, student Excel import |
-| Student management | Expanded baseline | Admin student CRUD with faculty/department assignment plus transfer history |
+| Student management | Complete | Admin student CRUD + Student Portal (profile, transcript, schedule, enrollments, waitlist, ratings) |
 | Professor management | Implemented baseline | Admin professor CRUD with faculty and department assignment |
 | Academic operations | Expanded baseline | Terms, courses, sections, enrollments, grade updates, attendance, GPA, exams |
 | Announcements | Partial | Announcement creation route with notification service |
-| Student/professor/admin portals | Not yet broad | No mature portal-style route surface comparable to other ports |
+| Student/professor/admin portals | Partial | Student portal complete; Professor and Admin portals pending |
 | Webhooks, analytics, exports, tests | Not implemented | No visible parity implementation yet |
 
 ## Current Public Route Surface
@@ -35,6 +35,7 @@ The Go port is beyond initialization and has a working backend foundation, but i
 - `GET|POST|PUT|DELETE /api/v1/academic/sections...`
 - `POST|GET|DELETE /api/v1/academic/.../enrollments`
 - `PATCH /api/v1/academic/sections/:section_id/students/:student_id/grade`
+- `GET /api/v1/student/...` for profile, transcript, schedule, waitlist, and ratings
 - `GET|POST|PUT|DELETE /api/v1/organizations/...`
 - `GET|POST /api/v1/academic/...` for selected attendance, GPA, grade-import, and exam flows
 - `POST /api/v1/announcements/`
