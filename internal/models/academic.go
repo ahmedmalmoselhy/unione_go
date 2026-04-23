@@ -89,3 +89,29 @@ type Exam struct {
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
+
+type Waitlist struct {
+	ID        uint           `gorm:"primaryKey" json:"id"`
+	StudentID uint           `gorm:"uniqueIndex:idx_student_section_waitlist;not null" json:"student_id"`
+	Student   *User          `json:"student,omitempty"`
+	SectionID uint           `gorm:"uniqueIndex:idx_student_section_waitlist;not null" json:"section_id"`
+	Section   *Section       `json:"section,omitempty"`
+	Position  int            `gorm:"not null" json:"position"`
+	Status    string         `gorm:"type:varchar(20);default:'waiting'" json:"status"` // waiting, promoted, cancelled
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
+type CourseRating struct {
+	ID        uint           `gorm:"primaryKey" json:"id"`
+	StudentID uint           `gorm:"not null" json:"student_id"`
+	Student   *User          `json:"student,omitempty"`
+	CourseID  uint           `gorm:"not null" json:"course_id"`
+	Course    *Course        `json:"course,omitempty"`
+	Rating    int            `gorm:"not null;check:rating >= 1 AND rating <= 5" json:"rating"`
+	Comment   string         `json:"comment"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+}

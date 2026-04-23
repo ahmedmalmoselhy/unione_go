@@ -35,6 +35,8 @@ func main() {
 			&models.Attendance{},
 			&models.Announcement{},
 			&models.Exam{},
+			&models.Waitlist{},
+			&models.CourseRating{},
 		)
 		if err != nil {
 			log.Fatalf("Failed to auto-migrate database: %v", err)
