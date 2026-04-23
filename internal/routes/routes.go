@@ -45,6 +45,9 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	academicService := services.NewAcademicService(academicRepo, userRepo, notifSvc)
 	academicHandler := handlers.NewAcademicHandler(academicService)
 
+	portalService := services.NewStudentPortalService(userRepo, academicRepo, academicService)
+	portalHandler := handlers.NewStudentPortalHandler(portalService)
+
 	api := r.Group("/api")
 
 	// Health check endpoint
@@ -165,6 +168,26 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			admin.GET("/employees/:id", employeeHandler.GetEmployee)
 			admin.PUT("/employees/:id", employeeHandler.AdminUpdateEmployee)
 			admin.DELETE("/employees/:id", employeeHandler.DeleteEmployee)
+		}
+
+		// Student Portal
+		student := v1.Group("/student", middlewares.AuthMiddleware(cfg.JWTSecret), middlewares.RequireRole("student"))
+		{
+			student.GET("/profile", portalHandler.GetProfile)
+			student.GET("/enrollments", portalHandler.GetEnrollments)
+			student.GET("/transcript", portalHandler.GetTranscript)
+			student.GET("/academic-history", portalHandler.GetAcademicHistory)
+			student.GET("/schedule", portalHandler.GetSchedule)
+			student.GET("/schedule/export", portalHandler.ExportScheduleICS)
+			student.GET("/attendance", portalHandler.GetAttendanceSummary)
+
+			// Waitlist
+			student.GET("/waitlist", portalHandler.GetWaitlist)
+			student.POST("/waitlist", portalHandler.JoinWaitlist)
+			student.DELETE("/waitlist/:id", portalHandler.LeaveWaitlist)
+
+			// Ratings
+			student.POST("/courses/:course_id/rate", portalHandler.RateCourse)
 		}
 	}
 
