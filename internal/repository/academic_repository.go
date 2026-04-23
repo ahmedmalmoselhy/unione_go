@@ -48,6 +48,20 @@ type AcademicRepository interface {
 	// Exam
 	CreateExam(exam *models.Exam) error
 	GetExamsBySection(sectionID uint) ([]models.Exam, error)
+
+	// Waitlist
+	CreateWaitlist(waitlist *models.Waitlist) error
+	GetWaitlistBySection(sectionID uint) ([]models.Waitlist, error)
+	GetWaitlistByStudent(studentID uint) ([]models.Waitlist, error)
+	GetWaitlistEntry(studentID, sectionID uint) (*models.Waitlist, error)
+	GetMaxWaitlistPosition(sectionID uint) (int, error)
+	DeleteWaitlist(id uint) error
+	UpdateWaitlist(waitlist *models.Waitlist) error
+
+	// Ratings
+	CreateRating(rating *models.CourseRating) error
+	GetRatingsByCourse(courseID uint) ([]models.CourseRating, error)
+	GetRatingByStudentAndCourse(studentID, courseID uint) (*models.CourseRating, error)
 }
 
 type academicRepository struct {
@@ -223,4 +237,58 @@ func (r *academicRepository) GetExamsBySection(sectionID uint) ([]models.Exam, e
 	var exams []models.Exam
 	err := r.db.Preload("Section.Course").Where("section_id = ?", sectionID).Find(&exams).Error
 	return exams, err
+}
+
+// Waitlist implementations
+func (r *academicRepository) CreateWaitlist(waitlist *models.Waitlist) error {
+	return r.db.Create(waitlist).Error
+}
+
+func (r *academicRepository) GetWaitlistBySection(sectionID uint) ([]models.Waitlist, error) {
+	var waitlist []models.Waitlist
+	err := r.db.Preload("Student").Where("section_id = ? AND status = 'waiting'", sectionID).Order("position asc").Find(&waitlist).Error
+	return waitlist, err
+}
+
+func (r *academicRepository) GetWaitlistByStudent(studentID uint) ([]models.Waitlist, error) {
+	var waitlist []models.Waitlist
+	err := r.db.Preload("Section.Course").Where("student_id = ?", studentID).Find(&waitlist).Error
+	return waitlist, err
+}
+
+func (r *academicRepository) GetWaitlistEntry(studentID, sectionID uint) (*models.Waitlist, error) {
+	var entry models.Waitlist
+	err := r.db.Where("student_id = ? AND section_id = ?", studentID, sectionID).First(&entry).Error
+	return &entry, err
+}
+
+func (r *academicRepository) GetMaxWaitlistPosition(sectionID uint) (int, error) {
+	var maxPosition int
+	err := r.db.Model(&models.Waitlist{}).Where("section_id = ? AND status = 'waiting'", sectionID).Select("COALESCE(MAX(position), 0)").Scan(&maxPosition).Error
+	return maxPosition, err
+}
+
+func (r *academicRepository) DeleteWaitlist(id uint) error {
+	return r.db.Delete(&models.Waitlist{}, id).Error
+}
+
+func (r *academicRepository) UpdateWaitlist(waitlist *models.Waitlist) error {
+	return r.db.Save(waitlist).Error
+}
+
+// Rating implementations
+func (r *academicRepository) CreateRating(rating *models.CourseRating) error {
+	return r.db.Create(rating).Error
+}
+
+func (r *academicRepository) GetRatingsByCourse(courseID uint) ([]models.CourseRating, error) {
+	var ratings []models.CourseRating
+	err := r.db.Preload("Student").Where("course_id = ?", courseID).Find(&ratings).Error
+	return ratings, err
+}
+
+func (r *academicRepository) GetRatingByStudentAndCourse(studentID, courseID uint) (*models.CourseRating, error) {
+	var rating models.CourseRating
+	err := r.db.Where("student_id = ? AND course_id = ?", studentID, courseID).First(&rating).Error
+	return &rating, err
 }
