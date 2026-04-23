@@ -157,6 +157,18 @@ Student portal routes are mounted under `/api/v1/student` and require a `student
 - `DELETE /waitlist/:id`
 - `POST /courses/:course_id/rate`
 
+## Professor Portal
+
+Professor portal routes are mounted under `/api/v1/professor` and require a `professor` role.
+
+- `GET /profile`
+- `GET /sections`
+- `GET /sections/:id/roster`
+- `PATCH /sections/:id/grade`
+- `POST /sections/:id/attendance`
+- `POST /sections/:id/announcements`
+- `GET /schedule`
+
 ## Notes
 
 - Several handlers exist for terms, courses, sections, enrollments, and grade updates, but they are not all mounted in the current router.

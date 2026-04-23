@@ -331,13 +331,13 @@ That work unlocks almost every later phase.
 
 ### Phase 4
 
-- [ ] Professor profile
-- [ ] Professor sections
-- [ ] Professor section students
-- [ ] Professor grading
-- [ ] Professor attendance workflow
-- [ ] Professor section announcements
-- [ ] Professor schedule
+- [x] Professor profile
+- [x] Professor sections
+- [x] Professor section students
+- [x] Professor grading
+- [x] Professor attendance workflow
+- [x] Professor section announcements
+- [x] Professor schedule
 
 ### Phase 5
 

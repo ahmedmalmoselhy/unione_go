@@ -1,12 +1,12 @@
 # UniOne Go - Current Status
 
 Last Updated: April 23, 2026
-Project Phase: Phase 3 Student Domain completed
+Project Phase: Phase 4 Professor Domain completed
 Overall Status: ACTIVE DEVELOPMENT
 
 ## Summary
 
-The Go port is rapidly moving towards parity. Phase 3 (Student Domain) is now complete, providing a full self-service portal for students.
+The Go port is rapidly moving towards parity. Phase 4 (Professor Domain) is now complete, providing a full self-service portal for professors.
 
 ## Verified Implementation Progress
 
@@ -18,10 +18,10 @@ The Go port is rapidly moving towards parity. Phase 3 (Student Domain) is now co
 | Organization management | Implemented baseline | Universities, faculties, and departments CRUD routes |
 | Employee management | Expanded baseline | Faculty employee CRUD, admin employee CRUD, optional faculty filtering, student Excel import |
 | Student management | Complete | Admin student CRUD + Student Portal (profile, transcript, schedule, enrollments, waitlist, ratings) |
-| Professor management | Implemented baseline | Admin professor CRUD with faculty and department assignment |
+| Professor management | Complete | Admin professor CRUD + Professor Portal (profile, roster, grading, attendance, announcements, schedule) |
 | Academic operations | Expanded baseline | Terms, courses, sections, enrollments, grade updates, attendance, GPA, exams |
-| Announcements | Partial | Announcement creation route with notification service |
-| Student/professor/admin portals | Partial | Student portal complete; Professor and Admin portals pending |
+| Announcements | Expanded baseline | Global, faculty, and section-scoped announcements implemented |
+| Student/professor/admin portals | Partial | Student and Professor portals complete; Admin portal pending |
 | Webhooks, analytics, exports, tests | Not implemented | No visible parity implementation yet |
 
 ## Current Public Route Surface
@@ -36,6 +36,7 @@ The Go port is rapidly moving towards parity. Phase 3 (Student Domain) is now co
 - `POST|GET|DELETE /api/v1/academic/.../enrollments`
 - `PATCH /api/v1/academic/sections/:section_id/students/:student_id/grade`
 - `GET /api/v1/student/...` for profile, transcript, schedule, waitlist, and ratings
+- `GET|PATCH|POST /api/v1/professor/...` for profile, sections, roster, grading, attendance, and announcements
 - `GET|POST|PUT|DELETE /api/v1/organizations/...`
 - `GET|POST /api/v1/academic/...` for selected attendance, GPA, grade-import, and exam flows
 - `POST /api/v1/announcements/`
