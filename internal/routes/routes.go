@@ -48,6 +48,9 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	portalService := services.NewStudentPortalService(userRepo, academicRepo, academicService)
 	portalHandler := handlers.NewStudentPortalHandler(portalService)
 
+	profPortalService := services.NewProfessorPortalService(userRepo, academicRepo, annRepo, academicService, notifSvc)
+	profPortalHandler := handlers.NewProfessorPortalHandler(profPortalService)
+
 	api := r.Group("/api")
 
 	// Health check endpoint
@@ -188,6 +191,18 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 
 			// Ratings
 			student.POST("/courses/:course_id/rate", portalHandler.RateCourse)
+		}
+
+		// Professor Portal
+		professor := v1.Group("/professor", middlewares.AuthMiddleware(cfg.JWTSecret), middlewares.RequireRole("professor"))
+		{
+			professor.GET("/profile", profPortalHandler.GetProfile)
+			professor.GET("/sections", profPortalHandler.GetSections)
+			professor.GET("/sections/:id/roster", profPortalHandler.GetSectionRoster)
+			professor.PATCH("/sections/:id/grade", profPortalHandler.UpdateGrade)
+			professor.POST("/sections/:id/attendance", profPortalHandler.RecordAttendance)
+			professor.POST("/sections/:id/announcements", profPortalHandler.CreateSectionAnnouncement)
+			professor.GET("/schedule", profPortalHandler.GetSchedule)
 		}
 	}
 
