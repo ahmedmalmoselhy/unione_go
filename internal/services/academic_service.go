@@ -370,6 +370,23 @@ func (s *academicService) UpdateGrade(studentID, sectionID uint, grade float64) 
 	if err := s.repo.UpdateEnrollment(enrollment); err != nil {
 		return nil, err
 	}
+
+	// Trigger notification
+	go func() {
+		section, _ := s.repo.GetSectionByID(sectionID)
+		courseName := "Unknown Course"
+		if section != nil && section.Course != nil {
+			courseName = section.Course.Name
+		}
+		s.notifSvc.CreateNotification(
+			studentID,
+			"grade_posted",
+			"Grade Posted",
+			fmt.Sprintf("Your final grade for %s has been posted: %.2f", courseName, grade),
+			"",
+		)
+	}()
+
 	return s.repo.GetEnrollment(studentID, sectionID)
 }
 
