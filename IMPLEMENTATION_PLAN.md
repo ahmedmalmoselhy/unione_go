@@ -352,12 +352,12 @@ That work unlocks almost every later phase.
 
 ### Phase 6
 
-- [ ] Shared announcements list/read
-- [ ] Notifications inbox
-- [ ] Mark read / mark all read
-- [ ] Delete notification
-- [ ] Email dispatch integration
-- [ ] Background delivery workflow
+- [x] Shared announcements list/read
+- [x] Notifications inbox
+- [x] Mark read / mark all read
+- [x] Delete notification
+- [x] Email dispatch integration
+- [x] Background delivery workflow
 
 ### Phase 7
 

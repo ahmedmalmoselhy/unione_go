@@ -1,12 +1,12 @@
 # UniOne Go - Current Status
 
 Last Updated: April 24, 2026
-Project Phase: Phase 5 Admin Academic Management completed
+Project Phase: Phase 6 Communication, Notifications, and Delivery completed
 Overall Status: ACTIVE DEVELOPMENT
 
 ## Summary
 
-The Go port is rapidly moving towards parity. Phase 5 is now complete, adding admin academic management for sections, teaching assistants, exam schedule publishing, group projects, and import templates.
+The Go port is rapidly moving towards parity. Phase 6 is now complete, adding a full notification system with inbox management, read-tracking for announcements, and automated delivery for grades and exams.
 
 ## Verified Implementation Progress
 
@@ -21,8 +21,9 @@ The Go port is rapidly moving towards parity. Phase 5 is now complete, adding ad
 | Professor management | Complete | Admin professor CRUD + Professor Portal (profile, roster, grading, attendance, announcements, schedule) |
 | Academic operations | Expanded baseline | Terms, courses, sections, enrollments, grade updates, attendance, GPA, exams |
 | Admin academic management | Complete | Admin academic CRUD, teaching assistants, exam schedule publish flow, group projects, import templates |
-| Announcements | Expanded baseline | Global, faculty, and section-scoped announcements implemented |
-| Student/professor/admin portals | Expanded baseline | Student and Professor portals complete; Admin academic management routes now mounted |
+| Announcements | Complete | Shared list with visibility rules (Global, Faculty, Section) and read-tracking |
+| Notifications | Complete | Inbox management (mark-read, mark-all-read, delete) and automated triggers |
+| Student/professor/admin portals | Expanded baseline | Portal coverage includes communication and notification features |
 | Webhooks, analytics, exports, tests | Not implemented | No visible parity implementation yet |
 
 ## Current Public Route Surface
@@ -36,7 +37,7 @@ The Go port is rapidly moving towards parity. Phase 5 is now complete, adding ad
 - `GET|POST|PUT|DELETE /api/v1/academic/sections...`
 - `POST|GET|DELETE /api/v1/academic/.../enrollments`
 - `PATCH /api/v1/academic/sections/:section_id/students/:student_id/grade`
-- `GET /api/v1/student/...` for profile, transcript, schedule, waitlist, and ratings
+- `GET /api/v1/student/...` for profile, transcript, schedule, enrollments, waitlist, and ratings
 - `GET|PATCH|POST /api/v1/professor/...` for profile, sections, roster, grading, attendance, and announcements
 - `GET|POST|PUT|DELETE /api/v1/organizations/...`
 - `GET|POST|DELETE /api/v1/admin/academic/sections/:section_id/teaching-assistants`
@@ -45,10 +46,10 @@ The Go port is rapidly moving towards parity. Phase 5 is now complete, adding ad
 - `GET|POST|PATCH|DELETE /api/v1/admin/academic/sections/:section_id/group-projects...`
 - `GET /api/v1/admin/import-templates/...`
 - `GET|POST /api/v1/academic/...` for selected attendance, GPA, grade-import, and exam flows
-- `POST /api/v1/announcements/`
+- `GET|POST /api/v1/announcements/` and `POST /api/v1/announcements/:id/read`
+- `GET|POST|DELETE /api/v1/notifications/...`
 
 ## Main Gaps
 
-1. Implement communication flows beyond the current announcement baseline, including inbox/read tracking and background delivery.
-2. Implement webhooks, analytics, exports, and stronger notification coverage.
-3. Add automated tests and fuller API documentation.
+1. Implement webhooks, analytics, exports, and stronger notification coverage.
+2. Add automated tests and fuller API documentation.
