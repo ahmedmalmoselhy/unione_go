@@ -60,6 +60,10 @@ type AcademicService interface {
 
 	// Exam
 	CreateExam(sectionID uint, date time.Time, location string) (*models.Exam, error)
+	GetExamSchedule(sectionID uint) (*models.Exam, error)
+	CreateExamSchedule(sectionID uint, date time.Time, startTime, endTime, location string) (*models.Exam, error)
+	UpdateExamSchedule(sectionID uint, date *time.Time, startTime, endTime, location *string) (*models.Exam, error)
+	PublishExamSchedule(sectionID uint) (*models.Exam, error)
 	GetExamsBySection(sectionID uint) ([]models.Exam, error)
 
 	// GPA Calculation
@@ -532,15 +536,106 @@ func (s *academicService) CreateExam(sectionID uint, date time.Time, location st
 		return nil, err
 	}
 
-	// Trigger notification
+	return exam, nil
+}
+
+func (s *academicService) GetExamSchedule(sectionID uint) (*models.Exam, error) {
+	exam, err := s.repo.GetExamScheduleBySection(sectionID)
+	if err != nil {
+		return nil, errors.New("exam schedule not found")
+	}
+
+	return exam, nil
+}
+
+func (s *academicService) CreateExamSchedule(sectionID uint, date time.Time, startTime, endTime, location string) (*models.Exam, error) {
+	if _, err := s.repo.GetSectionByID(sectionID); err != nil {
+		return nil, errors.New("section not found")
+	}
+	if _, err := s.repo.GetExamScheduleBySection(sectionID); err == nil {
+		return nil, errors.New("exam schedule already exists for this section")
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+
+	exam := &models.Exam{
+		SectionID:   sectionID,
+		Date:        date,
+		StartTime:   startTime,
+		EndTime:     endTime,
+		Location:    location,
+		IsPublished: false,
+	}
+	if err := s.repo.CreateExam(exam); err != nil {
+		return nil, err
+	}
+
+	return s.repo.GetExamScheduleBySection(sectionID)
+}
+
+func (s *academicService) UpdateExamSchedule(sectionID uint, date *time.Time, startTime, endTime, location *string) (*models.Exam, error) {
+	exam, err := s.repo.GetExamScheduleBySection(sectionID)
+	if err != nil {
+		return nil, errors.New("exam schedule not found")
+	}
+
+	if date != nil {
+		exam.Date = *date
+	}
+	if startTime != nil {
+		exam.StartTime = *startTime
+	}
+	if endTime != nil {
+		exam.EndTime = *endTime
+	}
+	if location != nil {
+		exam.Location = *location
+	}
+	if exam.IsPublished {
+		exam.IsPublished = false
+		exam.PublishedAt = nil
+	}
+
+	if err := s.repo.UpdateExam(exam); err != nil {
+		return nil, err
+	}
+
+	return s.repo.GetExamScheduleBySection(sectionID)
+}
+
+func (s *academicService) PublishExamSchedule(sectionID uint) (*models.Exam, error) {
+	exam, err := s.repo.GetExamScheduleBySection(sectionID)
+	if err != nil {
+		return nil, errors.New("exam schedule not found")
+	}
+
+	now := time.Now().UTC()
+	exam.IsPublished = true
+	exam.PublishedAt = &now
+
+	if err := s.repo.UpdateExam(exam); err != nil {
+		return nil, err
+	}
+
 	section, _ := s.repo.GetSectionByID(sectionID)
 	courseName := ""
 	if section != nil && section.Course != nil {
 		courseName = section.Course.Name
 	}
-	s.notifSvc.NotifyStudentsInSections([]uint{sectionID}, "Exam Scheduled", fmt.Sprintf("An exam for %s has been scheduled for %s at %s.", courseName, date.Format("Jan 02, 2006 15:04"), location))
+	s.notifSvc.NotifyStudentsInSections(
+		[]uint{sectionID},
+		"Exam Schedule Published",
+		fmt.Sprintf(
+			"The exam schedule for %s has been published for %s from %s to %s at %s.",
+			courseName,
+			exam.Date.Format("Jan 02, 2006"),
+			exam.StartTime,
+			exam.EndTime,
+			exam.Location,
+		),
+	)
 
-	return exam, nil
+	return s.repo.GetExamScheduleBySection(sectionID)
 }
 
 func (s *academicService) GetExamsBySection(sectionID uint) ([]models.Exam, error) {

@@ -87,6 +87,20 @@ type AssignTeachingAssistantInput struct {
 	ProfessorID uint `json:"professor_id" binding:"required"`
 }
 
+type CreateExamScheduleInput struct {
+	Date      time.Time `json:"date" binding:"required"`
+	StartTime string    `json:"start_time" binding:"required"`
+	EndTime   string    `json:"end_time" binding:"required"`
+	Location  string    `json:"location"`
+}
+
+type UpdateExamScheduleInput struct {
+	Date      *time.Time `json:"date"`
+	StartTime *string    `json:"start_time"`
+	EndTime   *string    `json:"end_time"`
+	Location  *string    `json:"location"`
+}
+
 func (h *AcademicHandler) CreateTerm(c *gin.Context) {
 	var input CreateTermInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -583,6 +597,82 @@ func (h *AcademicHandler) GetGPA(c *gin.Context) {
 	}
 
 	apiutil.Success(c, http.StatusOK, gin.H{"student_id": studentID, "gpa": gpa})
+}
+
+func (h *AcademicHandler) GetExamSchedule(c *gin.Context) {
+	sectionID, err := apiutil.ParseUintParam(c, "section_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_section_id", err.Error())
+		return
+	}
+
+	exam, err := h.academicService.GetExamSchedule(sectionID)
+	if err != nil {
+		apiutil.Error(c, http.StatusNotFound, "exam_schedule_not_found", err.Error())
+		return
+	}
+
+	apiutil.Success(c, http.StatusOK, exam)
+}
+
+func (h *AcademicHandler) CreateExamSchedule(c *gin.Context) {
+	sectionID, err := apiutil.ParseUintParam(c, "section_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_section_id", err.Error())
+		return
+	}
+
+	var input CreateExamScheduleInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
+		return
+	}
+
+	exam, err := h.academicService.CreateExamSchedule(sectionID, input.Date, input.StartTime, input.EndTime, input.Location)
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "create_exam_schedule_failed", err.Error())
+		return
+	}
+
+	apiutil.Success(c, http.StatusCreated, exam)
+}
+
+func (h *AcademicHandler) UpdateExamSchedule(c *gin.Context) {
+	sectionID, err := apiutil.ParseUintParam(c, "section_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_section_id", err.Error())
+		return
+	}
+
+	var input UpdateExamScheduleInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
+		return
+	}
+
+	exam, err := h.academicService.UpdateExamSchedule(sectionID, input.Date, input.StartTime, input.EndTime, input.Location)
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "update_exam_schedule_failed", err.Error())
+		return
+	}
+
+	apiutil.Success(c, http.StatusOK, exam)
+}
+
+func (h *AcademicHandler) PublishExamSchedule(c *gin.Context) {
+	sectionID, err := apiutil.ParseUintParam(c, "section_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_section_id", err.Error())
+		return
+	}
+
+	exam, err := h.academicService.PublishExamSchedule(sectionID)
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "publish_exam_schedule_failed", err.Error())
+		return
+	}
+
+	apiutil.Success(c, http.StatusOK, exam)
 }
 
 func (h *AcademicHandler) ListTeachingAssistants(c *gin.Context) {

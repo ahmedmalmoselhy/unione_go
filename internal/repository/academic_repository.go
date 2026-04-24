@@ -56,7 +56,9 @@ type AcademicRepository interface {
 
 	// Exam
 	CreateExam(exam *models.Exam) error
+	GetExamScheduleBySection(sectionID uint) (*models.Exam, error)
 	GetExamsBySection(sectionID uint) ([]models.Exam, error)
+	UpdateExam(exam *models.Exam) error
 
 	// Waitlist
 	CreateWaitlist(waitlist *models.Waitlist) error
@@ -280,10 +282,20 @@ func (r *academicRepository) CreateExam(exam *models.Exam) error {
 	return r.db.Create(exam).Error
 }
 
+func (r *academicRepository) GetExamScheduleBySection(sectionID uint) (*models.Exam, error) {
+	var exam models.Exam
+	err := r.db.Preload("Section.Course").Where("section_id = ?", sectionID).Order("id desc").First(&exam).Error
+	return &exam, err
+}
+
 func (r *academicRepository) GetExamsBySection(sectionID uint) ([]models.Exam, error) {
 	var exams []models.Exam
 	err := r.db.Preload("Section.Course").Where("section_id = ?", sectionID).Find(&exams).Error
 	return exams, err
+}
+
+func (r *academicRepository) UpdateExam(exam *models.Exam) error {
+	return r.db.Save(exam).Error
 }
 
 // Waitlist implementations
