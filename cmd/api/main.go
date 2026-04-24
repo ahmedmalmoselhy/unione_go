@@ -31,6 +31,7 @@ func main() {
 			&models.Course{},
 			&models.CoursePrerequisite{},
 			&models.Section{},
+			&models.SectionTeachingAssistant{},
 			&models.Enrollment{},
 			&models.Attendance{},
 			&models.Announcement{},

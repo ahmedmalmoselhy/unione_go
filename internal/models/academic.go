@@ -38,19 +38,33 @@ type CoursePrerequisite struct {
 }
 
 type Section struct {
-	ID             uint           `gorm:"primaryKey" json:"id"`
-	CourseID       uint           `gorm:"not null" json:"course_id"`
-	Course         *Course        `json:"course,omitempty"`
-	AcademicTermID uint           `gorm:"not null" json:"academic_term_id"`
-	AcademicTerm   *AcademicTerm  `json:"academic_term,omitempty"`
-	ProfessorID    *uint          `json:"professor_id"` // Nullable if not assigned yet
-	Professor      *User          `json:"professor,omitempty"`
-	Capacity       int            `gorm:"not null" json:"capacity"`
-	Schedule       string         `json:"schedule"` // e.g., "Mon/Wed 10:00-11:30"
-	Enrollments    []Enrollment   `json:"enrollments,omitempty"`
-	CreatedAt      time.Time      `json:"created_at"`
-	UpdatedAt      time.Time      `json:"updated_at"`
-	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
+	ID                 uint                       `gorm:"primaryKey" json:"id"`
+	CourseID           uint                       `gorm:"not null" json:"course_id"`
+	Course             *Course                    `json:"course,omitempty"`
+	AcademicTermID     uint                       `gorm:"not null" json:"academic_term_id"`
+	AcademicTerm       *AcademicTerm              `json:"academic_term,omitempty"`
+	ProfessorID        *uint                      `json:"professor_id"` // Nullable if not assigned yet
+	Professor          *User                      `json:"professor,omitempty"`
+	TeachingAssistants []SectionTeachingAssistant `json:"teaching_assistants,omitempty"`
+	Capacity           int                        `gorm:"not null" json:"capacity"`
+	Schedule           string                     `json:"schedule"` // e.g., "Mon/Wed 10:00-11:30"
+	Enrollments        []Enrollment               `json:"enrollments,omitempty"`
+	CreatedAt          time.Time                  `json:"created_at"`
+	UpdatedAt          time.Time                  `json:"updated_at"`
+	DeletedAt          gorm.DeletedAt             `gorm:"index" json:"-"`
+}
+
+type SectionTeachingAssistant struct {
+	ID               uint           `gorm:"primaryKey" json:"id"`
+	SectionID        uint           `gorm:"uniqueIndex:idx_section_professor_ta;not null" json:"section_id"`
+	Section          *Section       `json:"section,omitempty"`
+	ProfessorID      uint           `gorm:"uniqueIndex:idx_section_professor_ta;not null" json:"professor_id"`
+	Professor        *User          `json:"professor,omitempty"`
+	AssignedByUserID *uint          `json:"assigned_by_user_id"`
+	AssignedBy       *User          `json:"assigned_by,omitempty"`
+	CreatedAt        time.Time      `json:"created_at"`
+	UpdatedAt        time.Time      `json:"updated_at"`
+	DeletedAt        gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 type Enrollment struct {

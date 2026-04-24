@@ -34,6 +34,13 @@ type AcademicRepository interface {
 	UpdateSection(section *models.Section) error
 	DeleteSection(id uint) error
 
+	// Teaching assistants
+	ListTeachingAssistants(sectionID uint) ([]models.SectionTeachingAssistant, error)
+	GetTeachingAssistant(sectionID, assignmentID uint) (*models.SectionTeachingAssistant, error)
+	GetTeachingAssistantByProfessor(sectionID, professorID uint) (*models.SectionTeachingAssistant, error)
+	CreateTeachingAssistant(assignment *models.SectionTeachingAssistant) error
+	DeleteTeachingAssistant(id uint) error
+
 	// Enrollment
 	CreateEnrollment(enrollment *models.Enrollment) error
 	GetEnrollmentsByStudent(studentID uint) ([]models.Enrollment, error)
@@ -192,6 +199,32 @@ func (r *academicRepository) UpdateSection(section *models.Section) error {
 
 func (r *academicRepository) DeleteSection(id uint) error {
 	return r.db.Delete(&models.Section{}, id).Error
+}
+
+func (r *academicRepository) ListTeachingAssistants(sectionID uint) ([]models.SectionTeachingAssistant, error) {
+	var assignments []models.SectionTeachingAssistant
+	err := r.db.Preload("Professor").Where("section_id = ?", sectionID).Order("id asc").Find(&assignments).Error
+	return assignments, err
+}
+
+func (r *academicRepository) GetTeachingAssistant(sectionID, assignmentID uint) (*models.SectionTeachingAssistant, error) {
+	var assignment models.SectionTeachingAssistant
+	err := r.db.Preload("Professor").Where("section_id = ? AND id = ?", sectionID, assignmentID).First(&assignment).Error
+	return &assignment, err
+}
+
+func (r *academicRepository) GetTeachingAssistantByProfessor(sectionID, professorID uint) (*models.SectionTeachingAssistant, error) {
+	var assignment models.SectionTeachingAssistant
+	err := r.db.Preload("Professor").Where("section_id = ? AND professor_id = ?", sectionID, professorID).First(&assignment).Error
+	return &assignment, err
+}
+
+func (r *academicRepository) CreateTeachingAssistant(assignment *models.SectionTeachingAssistant) error {
+	return r.db.Create(assignment).Error
+}
+
+func (r *academicRepository) DeleteTeachingAssistant(id uint) error {
+	return r.db.Delete(&models.SectionTeachingAssistant{}, id).Error
 }
 
 // Enrollment implementations

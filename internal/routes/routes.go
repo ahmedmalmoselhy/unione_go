@@ -189,6 +189,9 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			admin.GET("/academic/sections/:id", academicHandler.GetSection)
 			admin.PUT("/academic/sections/:id", academicHandler.UpdateSection)
 			admin.DELETE("/academic/sections/:id", academicHandler.DeleteSection)
+			admin.GET("/academic/sections/:section_id/teaching-assistants", academicHandler.ListTeachingAssistants)
+			admin.POST("/academic/sections/:section_id/teaching-assistants", academicHandler.AssignTeachingAssistant)
+			admin.DELETE("/academic/sections/:section_id/teaching-assistants/:id", academicHandler.RemoveTeachingAssistant)
 
 			admin.GET("/organizations/universities", orgHandler.GetUniversities)
 			admin.POST("/organizations/universities", orgHandler.CreateUniversity)

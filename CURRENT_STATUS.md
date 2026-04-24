@@ -38,11 +38,12 @@ The Go port is rapidly moving towards parity. Phase 4 (Professor Domain) is now 
 - `GET /api/v1/student/...` for profile, transcript, schedule, waitlist, and ratings
 - `GET|PATCH|POST /api/v1/professor/...` for profile, sections, roster, grading, attendance, and announcements
 - `GET|POST|PUT|DELETE /api/v1/organizations/...`
+- `GET|POST|DELETE /api/v1/admin/academic/sections/:section_id/teaching-assistants`
 - `GET|POST /api/v1/academic/...` for selected attendance, GPA, grade-import, and exam flows
 - `POST /api/v1/announcements/`
 
 ## Main Gaps
 
-1. Implement teaching assistant assignments, exam schedule publishing, and group projects under the admin domain.
+1. Implement exam schedule publishing and group projects under the admin domain.
 2. Implement webhooks, analytics, exports, and stronger notification coverage.
 3. Add automated tests and fuller API documentation.

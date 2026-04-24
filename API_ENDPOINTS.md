@@ -170,6 +170,9 @@ Admin routes are currently mounted under `/api/v1/admin`.
 - `GET /academic/sections/:id`
 - `PUT /academic/sections/:id`
 - `DELETE /academic/sections/:id`
+- `GET /academic/sections/:section_id/teaching-assistants`
+- `POST /academic/sections/:section_id/teaching-assistants`
+- `DELETE /academic/sections/:section_id/teaching-assistants/:id`
 
 ### Organization Management
 

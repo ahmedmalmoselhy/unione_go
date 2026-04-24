@@ -10,6 +10,7 @@ import (
 	"github.com/ahmedmalmoselhy/unione_go/internal/models"
 	"github.com/ahmedmalmoselhy/unione_go/internal/repository"
 	"github.com/xuri/excelize/v2"
+	"gorm.io/gorm"
 )
 
 type AcademicService interface {
@@ -37,6 +38,11 @@ type AcademicService interface {
 	GetSection(id uint) (*models.Section, error)
 	UpdateSection(id uint, courseID, termID *uint, capacity int, schedule string, professorID *uint) (*models.Section, error)
 	DeleteSection(id uint) error
+
+	// Teaching assistants
+	ListTeachingAssistants(sectionID uint) ([]models.SectionTeachingAssistant, error)
+	AssignTeachingAssistant(sectionID, professorID uint, assignedByUserID *uint) (*models.SectionTeachingAssistant, bool, error)
+	RemoveTeachingAssistant(sectionID, assignmentID uint) error
 
 	// Enrollments
 	EnrollStudent(studentID, sectionID uint) (*models.Enrollment, error)
@@ -385,6 +391,53 @@ func (s *academicService) GetSection(id uint) (*models.Section, error) {
 
 func (s *academicService) DeleteSection(id uint) error {
 	return s.repo.DeleteSection(id)
+}
+
+func (s *academicService) ListTeachingAssistants(sectionID uint) ([]models.SectionTeachingAssistant, error) {
+	if _, err := s.repo.GetSectionByID(sectionID); err != nil {
+		return nil, errors.New("section not found")
+	}
+
+	return s.repo.ListTeachingAssistants(sectionID)
+}
+
+func (s *academicService) AssignTeachingAssistant(sectionID, professorID uint, assignedByUserID *uint) (*models.SectionTeachingAssistant, bool, error) {
+	if _, err := s.repo.GetSectionByID(sectionID); err != nil {
+		return nil, false, errors.New("section not found")
+	}
+
+	if err := s.validateProfessorAssignment(&professorID); err != nil {
+		return nil, false, err
+	}
+
+	existing, err := s.repo.GetTeachingAssistantByProfessor(sectionID, professorID)
+	if err == nil {
+		return existing, false, nil
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, false, err
+	}
+
+	assignment := &models.SectionTeachingAssistant{
+		SectionID:        sectionID,
+		ProfessorID:      professorID,
+		AssignedByUserID: assignedByUserID,
+	}
+	if err := s.repo.CreateTeachingAssistant(assignment); err != nil {
+		return nil, false, err
+	}
+
+	createdAssignment, err := s.repo.GetTeachingAssistant(sectionID, assignment.ID)
+	return createdAssignment, true, err
+}
+
+func (s *academicService) RemoveTeachingAssistant(sectionID, assignmentID uint) error {
+	assignment, err := s.repo.GetTeachingAssistant(sectionID, assignmentID)
+	if err != nil {
+		return errors.New("teaching assistant assignment not found")
+	}
+
+	return s.repo.DeleteTeachingAssistant(assignment.ID)
 }
 
 func (s *academicService) GetStudentEnrollments(studentID uint) ([]models.Enrollment, error) {

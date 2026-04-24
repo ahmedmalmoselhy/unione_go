@@ -345,7 +345,7 @@ That work unlocks almost every later phase.
 - [x] Admin courses
 - [x] Admin sections
 - [x] Admin faculties/departments
-- [ ] Teaching assistants
+- [x] Teaching assistants
 - [ ] Exam schedule publish flow
 - [ ] Group projects
 - [ ] Admin imports/templates

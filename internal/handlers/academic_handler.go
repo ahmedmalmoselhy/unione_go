@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/ahmedmalmoselhy/unione_go/internal/apiutil"
+	"github.com/ahmedmalmoselhy/unione_go/internal/middlewares"
 	"github.com/ahmedmalmoselhy/unione_go/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -80,6 +81,10 @@ type RecordAttendanceInput struct {
 type CreateExamInput struct {
 	Date     time.Time `json:"date" binding:"required"`
 	Location string    `json:"location" binding:"required"`
+}
+
+type AssignTeachingAssistantInput struct {
+	ProfessorID uint `json:"professor_id" binding:"required"`
 }
 
 func (h *AcademicHandler) CreateTerm(c *gin.Context) {
@@ -578,4 +583,74 @@ func (h *AcademicHandler) GetGPA(c *gin.Context) {
 	}
 
 	apiutil.Success(c, http.StatusOK, gin.H{"student_id": studentID, "gpa": gpa})
+}
+
+func (h *AcademicHandler) ListTeachingAssistants(c *gin.Context) {
+	sectionID, err := apiutil.ParseUintParam(c, "section_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_section_id", err.Error())
+		return
+	}
+
+	assignments, err := h.academicService.ListTeachingAssistants(sectionID)
+	if err != nil {
+		apiutil.Error(c, http.StatusNotFound, "list_teaching_assistants_failed", err.Error())
+		return
+	}
+
+	apiutil.Success(c, http.StatusOK, assignments)
+}
+
+func (h *AcademicHandler) AssignTeachingAssistant(c *gin.Context) {
+	sectionID, err := apiutil.ParseUintParam(c, "section_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_section_id", err.Error())
+		return
+	}
+
+	var input AssignTeachingAssistantInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
+		return
+	}
+
+	assignedByUserID, ok := middlewares.GetUserID(c)
+	var assignedBy *uint
+	if ok {
+		assignedBy = &assignedByUserID
+	}
+
+	assignment, created, err := h.academicService.AssignTeachingAssistant(sectionID, input.ProfessorID, assignedBy)
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "assign_teaching_assistant_failed", err.Error())
+		return
+	}
+
+	status := http.StatusOK
+	if created {
+		status = http.StatusCreated
+	}
+
+	apiutil.Success(c, status, assignment)
+}
+
+func (h *AcademicHandler) RemoveTeachingAssistant(c *gin.Context) {
+	sectionID, err := apiutil.ParseUintParam(c, "section_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_section_id", err.Error())
+		return
+	}
+
+	assignmentID, err := apiutil.ParseUintParam(c, "id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_assignment_id", err.Error())
+		return
+	}
+
+	if err := h.academicService.RemoveTeachingAssistant(sectionID, assignmentID); err != nil {
+		apiutil.Error(c, http.StatusNotFound, "remove_teaching_assistant_failed", err.Error())
+		return
+	}
+
+	apiutil.NoContent(c)
 }
