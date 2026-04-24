@@ -55,3 +55,40 @@ func (h *AnnouncementHandler) CreateAnnouncement(c *gin.Context) {
 
 	apiutil.Success(c, http.StatusCreated, announcement)
 }
+
+func (h *AnnouncementHandler) ListAnnouncements(c *gin.Context) {
+	userID, exists := middlewares.GetUserID(c)
+	if !exists {
+		apiutil.Error(c, http.StatusUnauthorized, "unauthorized", "Authentication required")
+		return
+	}
+
+	announcements, err := h.notifSvc.ListAnnouncements(userID)
+	if err != nil {
+		apiutil.Error(c, http.StatusInternalServerError, "fetch_announcements_failed", err.Error())
+		return
+	}
+
+	apiutil.Success(c, http.StatusOK, announcements)
+}
+
+func (h *AnnouncementHandler) MarkRead(c *gin.Context) {
+	announcementID, err := apiutil.ParseID(c.Param("id"))
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_id", "Invalid announcement ID")
+		return
+	}
+
+	userID, exists := middlewares.GetUserID(c)
+	if !exists {
+		apiutil.Error(c, http.StatusUnauthorized, "unauthorized", "Authentication required")
+		return
+	}
+
+	if err := h.notifSvc.MarkAnnouncementRead(announcementID, userID); err != nil {
+		apiutil.Error(c, http.StatusInternalServerError, "mark_read_failed", err.Error())
+		return
+	}
+
+	apiutil.Success(c, http.StatusOK, gin.H{"message": "Marked as read"})
+}
