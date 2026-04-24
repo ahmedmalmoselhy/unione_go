@@ -39,9 +39,11 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 
 	annRepo := repository.NewAnnouncementRepository(db)
 	academicRepo := repository.NewAcademicRepository(db)
+	notifRepo := repository.NewNotificationRepository(db)
 
-	notifSvc := services.NewNotificationService(annRepo, userRepo, academicRepo, cfg)
+	notifSvc := services.NewNotificationService(annRepo, userRepo, academicRepo, notifRepo, cfg)
 	annHandler := handlers.NewAnnouncementHandler(notifSvc)
+	notifHandler := handlers.NewNotificationHandler(notifSvc)
 
 	academicService := services.NewAcademicService(academicRepo, userRepo, notifSvc)
 	academicHandler := handlers.NewAcademicHandler(academicService)
@@ -148,7 +150,18 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		// Announcements
 		announcements := v1.Group("/announcements", middlewares.AuthMiddleware(cfg.JWTSecret))
 		{
+			announcements.GET("/", annHandler.ListAnnouncements)
 			announcements.POST("/", middlewares.RequireRole("admin", "employee", "professor"), annHandler.CreateAnnouncement)
+			announcements.POST("/:id/read", annHandler.MarkRead)
+		}
+
+		// Notifications
+		notifications := v1.Group("/notifications", middlewares.AuthMiddleware(cfg.JWTSecret))
+		{
+			notifications.GET("/", notifHandler.ListNotifications)
+			notifications.POST("/read-all", notifHandler.MarkAllRead)
+			notifications.POST("/:id/read", notifHandler.MarkRead)
+			notifications.DELETE("/:id", notifHandler.Delete)
 		}
 
 		admin := v1.Group("/admin", middlewares.AuthMiddleware(cfg.JWTSecret), middlewares.RequireRole("admin", "employee"))
