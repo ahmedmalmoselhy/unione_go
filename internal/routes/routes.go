@@ -171,6 +171,39 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			admin.GET("/employees/:id", employeeHandler.GetEmployee)
 			admin.PUT("/employees/:id", employeeHandler.AdminUpdateEmployee)
 			admin.DELETE("/employees/:id", employeeHandler.DeleteEmployee)
+
+			admin.GET("/academic/terms", academicHandler.GetTerms)
+			admin.POST("/academic/terms", academicHandler.CreateTerm)
+			admin.GET("/academic/terms/:id", academicHandler.GetTerm)
+			admin.PUT("/academic/terms/:id", academicHandler.UpdateTerm)
+			admin.DELETE("/academic/terms/:id", academicHandler.DeleteTerm)
+
+			admin.GET("/academic/courses", academicHandler.GetCourses)
+			admin.POST("/academic/courses", academicHandler.CreateCourse)
+			admin.GET("/academic/courses/:id", academicHandler.GetCourse)
+			admin.PUT("/academic/courses/:id", academicHandler.UpdateCourse)
+			admin.DELETE("/academic/courses/:id", academicHandler.DeleteCourse)
+
+			admin.GET("/academic/sections", academicHandler.GetSections)
+			admin.POST("/academic/sections", academicHandler.CreateSection)
+			admin.GET("/academic/sections/:id", academicHandler.GetSection)
+			admin.PUT("/academic/sections/:id", academicHandler.UpdateSection)
+			admin.DELETE("/academic/sections/:id", academicHandler.DeleteSection)
+
+			admin.GET("/organizations/universities", orgHandler.GetUniversities)
+			admin.POST("/organizations/universities", orgHandler.CreateUniversity)
+			admin.PUT("/organizations/universities/:id", orgHandler.UpdateUniversity)
+			admin.DELETE("/organizations/universities/:id", orgHandler.DeleteUniversity)
+
+			admin.GET("/organizations/faculties", orgHandler.ListFaculties)
+			admin.POST("/organizations/faculties", orgHandler.AdminCreateFaculty)
+			admin.PUT("/organizations/faculties/:id", orgHandler.AdminUpdateFaculty)
+			admin.DELETE("/organizations/faculties/:id", orgHandler.DeleteFaculty)
+
+			admin.GET("/organizations/departments", orgHandler.ListDepartments)
+			admin.POST("/organizations/departments", orgHandler.AdminCreateDepartment)
+			admin.PUT("/organizations/departments/:id", orgHandler.AdminUpdateDepartment)
+			admin.DELETE("/organizations/departments/:id", orgHandler.DeleteDepartment)
 		}
 
 		// Student Portal

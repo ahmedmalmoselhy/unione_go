@@ -11,18 +11,28 @@ type OrgRepository interface {
 	GetUniversityByID(id uint) (*models.University, error)
 	UpdateUniversity(u *models.University) error
 	DeleteUniversity(id uint) error
-	
+
 	CreateFaculty(f *models.Faculty) error
+	GetFaculties(filter FacultyFilter) ([]models.Faculty, error)
 	GetFacultiesByUniversity(uniID uint) ([]models.Faculty, error)
 	GetFacultyByID(id uint) (*models.Faculty, error)
 	UpdateFaculty(f *models.Faculty) error
 	DeleteFaculty(id uint) error
-	
+
 	CreateDepartment(d *models.Department) error
+	GetDepartments(filter DepartmentFilter) ([]models.Department, error)
 	GetDepartmentsByFaculty(facultyID uint) ([]models.Department, error)
 	GetDepartmentByID(id uint) (*models.Department, error)
 	UpdateDepartment(d *models.Department) error
 	DeleteDepartment(id uint) error
+}
+
+type FacultyFilter struct {
+	UniversityID *uint
+}
+
+type DepartmentFilter struct {
+	FacultyID *uint
 }
 
 type orgRepository struct {
@@ -65,12 +75,22 @@ func (r *orgRepository) CreateFaculty(f *models.Faculty) error {
 	return r.db.Create(f).Error
 }
 
-func (r *orgRepository) GetFacultiesByUniversity(uniID uint) ([]models.Faculty, error) {
+func (r *orgRepository) GetFaculties(filter FacultyFilter) ([]models.Faculty, error) {
 	var faculties []models.Faculty
-	if err := r.db.Where("university_id = ?", uniID).Find(&faculties).Error; err != nil {
+
+	query := r.db.Model(&models.Faculty{})
+	if filter.UniversityID != nil {
+		query = query.Where("university_id = ?", *filter.UniversityID)
+	}
+
+	if err := query.Find(&faculties).Error; err != nil {
 		return nil, err
 	}
 	return faculties, nil
+}
+
+func (r *orgRepository) GetFacultiesByUniversity(uniID uint) ([]models.Faculty, error) {
+	return r.GetFaculties(FacultyFilter{UniversityID: &uniID})
 }
 
 func (r *orgRepository) GetFacultyByID(id uint) (*models.Faculty, error) {
@@ -93,12 +113,22 @@ func (r *orgRepository) CreateDepartment(d *models.Department) error {
 	return r.db.Create(d).Error
 }
 
-func (r *orgRepository) GetDepartmentsByFaculty(facultyID uint) ([]models.Department, error) {
+func (r *orgRepository) GetDepartments(filter DepartmentFilter) ([]models.Department, error) {
 	var depts []models.Department
-	if err := r.db.Where("faculty_id = ?", facultyID).Find(&depts).Error; err != nil {
+
+	query := r.db.Model(&models.Department{})
+	if filter.FacultyID != nil {
+		query = query.Where("faculty_id = ?", *filter.FacultyID)
+	}
+
+	if err := query.Find(&depts).Error; err != nil {
 		return nil, err
 	}
 	return depts, nil
+}
+
+func (r *orgRepository) GetDepartmentsByFaculty(facultyID uint) ([]models.Department, error) {
+	return r.GetDepartments(DepartmentFilter{FacultyID: &facultyID})
 }
 
 func (r *orgRepository) GetDepartmentByID(id uint) (*models.Department, error) {

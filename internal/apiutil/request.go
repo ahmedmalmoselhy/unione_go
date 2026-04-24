@@ -34,3 +34,18 @@ func ParseRequiredUintQuery(c *gin.Context, key string) (uint, error) {
 
 	return uint(parsed), nil
 }
+
+func ParseOptionalUintQuery(c *gin.Context, key string) (*uint, error) {
+	value := c.Query(key)
+	if value == "" {
+		return nil, nil
+	}
+
+	parsed, err := strconv.ParseUint(value, 10, 32)
+	if err != nil {
+		return nil, fmt.Errorf("invalid query parameter %s", key)
+	}
+
+	result := uint(parsed)
+	return &result, nil
+}

@@ -341,10 +341,10 @@ That work unlocks almost every later phase.
 
 ### Phase 5
 
-- [ ] Admin academic terms
-- [ ] Admin courses
-- [ ] Admin sections
-- [ ] Admin faculties/departments
+- [x] Admin academic terms
+- [x] Admin courses
+- [x] Admin sections
+- [x] Admin faculties/departments
 - [ ] Teaching assistants
 - [ ] Exam schedule publish flow
 - [ ] Group projects

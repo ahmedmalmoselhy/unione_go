@@ -62,6 +62,7 @@ Academic routes are mounted under `/api/v1/academic`.
 
 ### Courses
 
+- `GET /courses`
 - `GET /courses?department_id=:department_id`
 - `POST /courses`
 - `GET /courses/:id`
@@ -70,6 +71,7 @@ Academic routes are mounted under `/api/v1/academic`.
 
 ### Sections
 
+- `GET /sections`
 - `GET /sections?course_id=:course_id`
 - `GET /sections?academic_term_id=:academic_term_id`
 - `GET /sections?professor_id=:professor_id`
@@ -141,6 +143,51 @@ Admin routes are currently mounted under `/api/v1/admin`.
 - `PUT /employees/:id`
 - `DELETE /employees/:id`
 
+### Academic Terms
+
+- `GET /academic/terms`
+- `POST /academic/terms`
+- `GET /academic/terms/:id`
+- `PUT /academic/terms/:id`
+- `DELETE /academic/terms/:id`
+
+### Academic Courses
+
+- `GET /academic/courses`
+- `GET /academic/courses?department_id=:department_id`
+- `POST /academic/courses`
+- `GET /academic/courses/:id`
+- `PUT /academic/courses/:id`
+- `DELETE /academic/courses/:id`
+
+### Academic Sections
+
+- `GET /academic/sections`
+- `GET /academic/sections?course_id=:course_id`
+- `GET /academic/sections?academic_term_id=:academic_term_id`
+- `GET /academic/sections?professor_id=:professor_id`
+- `POST /academic/sections`
+- `GET /academic/sections/:id`
+- `PUT /academic/sections/:id`
+- `DELETE /academic/sections/:id`
+
+### Organization Management
+
+- `GET /organizations/universities`
+- `POST /organizations/universities`
+- `PUT /organizations/universities/:id`
+- `DELETE /organizations/universities/:id`
+- `GET /organizations/faculties`
+- `GET /organizations/faculties?university_id=:university_id`
+- `POST /organizations/faculties`
+- `PUT /organizations/faculties/:id`
+- `DELETE /organizations/faculties/:id`
+- `GET /organizations/departments`
+- `GET /organizations/departments?faculty_id=:faculty_id`
+- `POST /organizations/departments`
+- `PUT /organizations/departments/:id`
+- `DELETE /organizations/departments/:id`
+
 ## Student Portal
 
 Student portal routes are mounted under `/api/v1/student` and require a `student` role.
@@ -171,7 +218,7 @@ Professor portal routes are mounted under `/api/v1/professor` and require a `pro
 
 ## Notes
 
-- Several handlers exist for terms, courses, sections, enrollments, and grade updates, but they are not all mounted in the current router.
+- Course and section listing endpoints now support optional query filters; when omitted they return the full collection.
 - Course prerequisites are now modeled and enforced during enrollment when prerequisite grades are available.
 - Student transfer history is persisted through `StudentDepartmentHistory`.
 - This document reflects exposed routes, not every handler present in the codebase.

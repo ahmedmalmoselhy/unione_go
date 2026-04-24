@@ -1,7 +1,7 @@
 # UniOne Go - Current Status
 
 Last Updated: April 23, 2026
-Project Phase: Phase 4 Professor Domain completed
+Project Phase: Phase 5 Admin Academic Management in progress
 Overall Status: ACTIVE DEVELOPMENT
 
 ## Summary
@@ -21,7 +21,7 @@ The Go port is rapidly moving towards parity. Phase 4 (Professor Domain) is now 
 | Professor management | Complete | Admin professor CRUD + Professor Portal (profile, roster, grading, attendance, announcements, schedule) |
 | Academic operations | Expanded baseline | Terms, courses, sections, enrollments, grade updates, attendance, GPA, exams |
 | Announcements | Expanded baseline | Global, faculty, and section-scoped announcements implemented |
-| Student/professor/admin portals | Partial | Student and Professor portals complete; Admin portal pending |
+| Student/professor/admin portals | Expanded baseline | Student and Professor portals complete; Admin academic management routes now mounted |
 | Webhooks, analytics, exports, tests | Not implemented | No visible parity implementation yet |
 
 ## Current Public Route Surface
@@ -43,6 +43,6 @@ The Go port is rapidly moving towards parity. Phase 4 (Professor Domain) is now 
 
 ## Main Gaps
 
-1. Expand broader student, professor, and admin route groups.
+1. Implement teaching assistant assignments, exam schedule publishing, and group projects under the admin domain.
 2. Implement webhooks, analytics, exports, and stronger notification coverage.
 3. Add automated tests and fuller API documentation.

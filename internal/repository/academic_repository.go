@@ -17,6 +17,7 @@ type AcademicRepository interface {
 
 	// Course
 	CreateCourse(course *models.Course) error
+	GetAllCourses() ([]models.Course, error)
 	GetCoursesByDepartment(deptID uint) ([]models.Course, error)
 	GetCourseByID(id uint) (*models.Course, error)
 	SetCoursePrerequisites(courseID uint, prerequisiteIDs []uint) error
@@ -25,6 +26,7 @@ type AcademicRepository interface {
 
 	// Section
 	CreateSection(section *models.Section) error
+	GetAllSections() ([]models.Section, error)
 	GetSectionsByCourse(courseID uint) ([]models.Section, error)
 	GetSectionsByTerm(termID uint) ([]models.Section, error)
 	GetSectionsByProfessor(profID uint) ([]models.Section, error)
@@ -102,6 +104,12 @@ func (r *academicRepository) CreateCourse(course *models.Course) error {
 	return r.db.Create(course).Error
 }
 
+func (r *academicRepository) GetAllCourses() ([]models.Course, error) {
+	var courses []models.Course
+	err := r.db.Preload("Prerequisites").Find(&courses).Error
+	return courses, err
+}
+
 func (r *academicRepository) GetCoursesByDepartment(deptID uint) ([]models.Course, error) {
 	var courses []models.Course
 	err := r.db.Preload("Prerequisites").Where("department_id = ?", deptID).Find(&courses).Error
@@ -146,6 +154,12 @@ func (r *academicRepository) DeleteCourse(id uint) error {
 // Section implementations
 func (r *academicRepository) CreateSection(section *models.Section) error {
 	return r.db.Create(section).Error
+}
+
+func (r *academicRepository) GetAllSections() ([]models.Section, error) {
+	var sections []models.Section
+	err := r.db.Preload("Course").Preload("Course.Prerequisites").Preload("AcademicTerm").Preload("Professor").Find(&sections).Error
+	return sections, err
 }
 
 func (r *academicRepository) GetSectionsByCourse(courseID uint) ([]models.Section, error) {

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/ahmedmalmoselhy/unione_go/internal/apiutil"
@@ -45,6 +44,7 @@ type UpdateCourseInput struct {
 	Name            string `json:"name" binding:"required"`
 	Credits         int    `json:"credits" binding:"required"`
 	Description     string `json:"description"`
+	DepartmentID    *uint  `json:"department_id"`
 	PrerequisiteIDs []uint `json:"prerequisite_ids"`
 }
 
@@ -57,9 +57,11 @@ type CreateSectionInput struct {
 }
 
 type UpdateSectionInput struct {
-	Capacity    int    `json:"capacity" binding:"required"`
-	Schedule    string `json:"schedule"`
-	ProfessorID *uint  `json:"professor_id"`
+	CourseID       *uint  `json:"course_id"`
+	AcademicTermID *uint  `json:"academic_term_id"`
+	Capacity       int    `json:"capacity" binding:"required"`
+	Schedule       string `json:"schedule"`
+	ProfessorID    *uint  `json:"professor_id"`
 }
 
 type EnrollmentInput struct {
@@ -183,13 +185,13 @@ func (h *AcademicHandler) CreateCourse(c *gin.Context) {
 }
 
 func (h *AcademicHandler) GetCourses(c *gin.Context) {
-	departmentID, err := apiutil.ParseRequiredUintQuery(c, "department_id")
+	departmentID, err := apiutil.ParseOptionalUintQuery(c, "department_id")
 	if err != nil {
 		apiutil.Error(c, http.StatusBadRequest, "invalid_department_id", err.Error())
 		return
 	}
 
-	courses, err := h.academicService.GetCoursesByDept(departmentID)
+	courses, err := h.academicService.ListCourses(departmentID)
 	if err != nil {
 		apiutil.Error(c, http.StatusInternalServerError, "list_courses_failed", err.Error())
 		return
@@ -227,7 +229,7 @@ func (h *AcademicHandler) UpdateCourse(c *gin.Context) {
 		return
 	}
 
-	course, err := h.academicService.UpdateCourse(id, input.Code, input.Name, input.Credits, input.Description, input.PrerequisiteIDs)
+	course, err := h.academicService.UpdateCourse(id, input.Code, input.Name, input.Credits, input.Description, input.DepartmentID, input.PrerequisiteIDs)
 	if err != nil {
 		apiutil.Error(c, http.StatusBadRequest, "update_course_failed", err.Error())
 		return
@@ -268,58 +270,31 @@ func (h *AcademicHandler) CreateSection(c *gin.Context) {
 }
 
 func (h *AcademicHandler) GetSections(c *gin.Context) {
-	if courseID := c.Query("course_id"); courseID != "" {
-		parsed, err := strconv.ParseUint(courseID, 10, 32)
-		if err != nil {
-			apiutil.Error(c, http.StatusBadRequest, "invalid_course_id", "Invalid course_id")
-			return
-		}
-
-		sections, err := h.academicService.GetSectionsByCourse(uint(parsed))
-		if err != nil {
-			apiutil.Error(c, http.StatusInternalServerError, "list_sections_failed", err.Error())
-			return
-		}
-
-		apiutil.Success(c, http.StatusOK, sections)
+	courseID, err := apiutil.ParseOptionalUintQuery(c, "course_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_course_id", err.Error())
 		return
 	}
 
-	if termID := c.Query("academic_term_id"); termID != "" {
-		parsed, err := strconv.ParseUint(termID, 10, 32)
-		if err != nil {
-			apiutil.Error(c, http.StatusBadRequest, "invalid_term_id", "Invalid academic_term_id")
-			return
-		}
-
-		sections, err := h.academicService.GetSectionsByTerm(uint(parsed))
-		if err != nil {
-			apiutil.Error(c, http.StatusInternalServerError, "list_sections_failed", err.Error())
-			return
-		}
-
-		apiutil.Success(c, http.StatusOK, sections)
+	termID, err := apiutil.ParseOptionalUintQuery(c, "academic_term_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_term_id", err.Error())
 		return
 	}
 
-	if professorID := c.Query("professor_id"); professorID != "" {
-		parsed, err := strconv.ParseUint(professorID, 10, 32)
-		if err != nil {
-			apiutil.Error(c, http.StatusBadRequest, "invalid_professor_id", "Invalid professor_id")
-			return
-		}
-
-		sections, err := h.academicService.GetSectionsByProfessor(uint(parsed))
-		if err != nil {
-			apiutil.Error(c, http.StatusInternalServerError, "list_sections_failed", err.Error())
-			return
-		}
-
-		apiutil.Success(c, http.StatusOK, sections)
+	professorID, err := apiutil.ParseOptionalUintQuery(c, "professor_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_professor_id", err.Error())
 		return
 	}
 
-	apiutil.Error(c, http.StatusBadRequest, "missing_filter", "course_id, academic_term_id or professor_id is required")
+	sections, err := h.academicService.ListSections(courseID, termID, professorID)
+	if err != nil {
+		apiutil.Error(c, http.StatusInternalServerError, "list_sections_failed", err.Error())
+		return
+	}
+
+	apiutil.Success(c, http.StatusOK, sections)
 }
 
 func (h *AcademicHandler) GetSection(c *gin.Context) {
@@ -351,7 +326,7 @@ func (h *AcademicHandler) UpdateSection(c *gin.Context) {
 		return
 	}
 
-	section, err := h.academicService.UpdateSection(id, input.Capacity, input.Schedule, input.ProfessorID)
+	section, err := h.academicService.UpdateSection(id, input.CourseID, input.AcademicTermID, input.Capacity, input.Schedule, input.ProfessorID)
 	if err != nil {
 		apiutil.Error(c, http.StatusBadRequest, "update_section_failed", err.Error())
 		return

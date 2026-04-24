@@ -14,13 +14,15 @@ type OrgService interface {
 	DeleteUniversity(id uint) error
 
 	CreateFaculty(name string, uniID uint) (*models.Faculty, error)
+	ListFaculties(uniID *uint) ([]models.Faculty, error)
 	GetFaculties(uniID uint) ([]models.Faculty, error)
-	UpdateFaculty(id uint, name string) (*models.Faculty, error)
+	UpdateFaculty(id uint, name string, uniID *uint) (*models.Faculty, error)
 	DeleteFaculty(id uint) error
 
 	CreateDepartment(name string, facultyID uint) (*models.Department, error)
+	ListDepartments(facultyID *uint) ([]models.Department, error)
 	GetDepartments(facultyID uint) ([]models.Department, error)
-	UpdateDepartment(id uint, name string) (*models.Department, error)
+	UpdateDepartment(id uint, name string, facultyID *uint) (*models.Department, error)
 	DeleteDepartment(id uint) error
 }
 
@@ -67,7 +69,7 @@ func (s *orgService) CreateFaculty(name string, uniID uint) (*models.Faculty, er
 	if name == "" {
 		return nil, errors.New("faculty name cannot be empty")
 	}
-	
+
 	faculty := &models.Faculty{Name: name, UniversityID: uniID}
 	if err := s.repo.CreateFaculty(faculty); err != nil {
 		return nil, err
@@ -79,12 +81,19 @@ func (s *orgService) GetFaculties(uniID uint) ([]models.Faculty, error) {
 	return s.repo.GetFacultiesByUniversity(uniID)
 }
 
-func (s *orgService) UpdateFaculty(id uint, name string) (*models.Faculty, error) {
+func (s *orgService) ListFaculties(uniID *uint) ([]models.Faculty, error) {
+	return s.repo.GetFaculties(repository.FacultyFilter{UniversityID: uniID})
+}
+
+func (s *orgService) UpdateFaculty(id uint, name string, uniID *uint) (*models.Faculty, error) {
 	faculty, err := s.repo.GetFacultyByID(id)
 	if err != nil {
 		return nil, err
 	}
 	faculty.Name = name
+	if uniID != nil {
+		faculty.UniversityID = *uniID
+	}
 	if err := s.repo.UpdateFaculty(faculty); err != nil {
 		return nil, err
 	}
@@ -99,7 +108,7 @@ func (s *orgService) CreateDepartment(name string, facultyID uint) (*models.Depa
 	if name == "" {
 		return nil, errors.New("department name cannot be empty")
 	}
-	
+
 	// Validate parent exists to provide a friendly error
 	_, err := s.repo.GetFacultyByID(facultyID)
 	if err != nil {
@@ -117,12 +126,22 @@ func (s *orgService) GetDepartments(facultyID uint) ([]models.Department, error)
 	return s.repo.GetDepartmentsByFaculty(facultyID)
 }
 
-func (s *orgService) UpdateDepartment(id uint, name string) (*models.Department, error) {
+func (s *orgService) ListDepartments(facultyID *uint) ([]models.Department, error) {
+	return s.repo.GetDepartments(repository.DepartmentFilter{FacultyID: facultyID})
+}
+
+func (s *orgService) UpdateDepartment(id uint, name string, facultyID *uint) (*models.Department, error) {
 	dept, err := s.repo.GetDepartmentByID(id)
 	if err != nil {
 		return nil, err
 	}
 	dept.Name = name
+	if facultyID != nil {
+		if _, err := s.repo.GetFacultyByID(*facultyID); err != nil {
+			return nil, errors.New("parent faculty not found")
+		}
+		dept.FacultyID = *facultyID
+	}
 	if err := s.repo.UpdateDepartment(dept); err != nil {
 		return nil, err
 	}

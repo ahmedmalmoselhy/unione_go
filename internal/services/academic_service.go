@@ -22,18 +22,20 @@ type AcademicService interface {
 
 	// Courses
 	CreateCourse(code, name string, credits int, desc string, deptID uint, prerequisiteIDs []uint) (*models.Course, error)
+	ListCourses(deptID *uint) ([]models.Course, error)
 	GetCoursesByDept(deptID uint) ([]models.Course, error)
 	GetCourse(id uint) (*models.Course, error)
-	UpdateCourse(id uint, code, name string, credits int, desc string, prerequisiteIDs []uint) (*models.Course, error)
+	UpdateCourse(id uint, code, name string, credits int, desc string, deptID *uint, prerequisiteIDs []uint) (*models.Course, error)
 	DeleteCourse(id uint) error
 
 	// Sections
 	CreateSection(courseID, termID uint, capacity int, schedule string, professorID *uint) (*models.Section, error)
+	ListSections(courseID, termID, profID *uint) ([]models.Section, error)
 	GetSectionsByCourse(courseID uint) ([]models.Section, error)
 	GetSectionsByTerm(termID uint) ([]models.Section, error)
 	GetSectionsByProfessor(profID uint) ([]models.Section, error)
 	GetSection(id uint) (*models.Section, error)
-	UpdateSection(id uint, capacity int, schedule string, professorID *uint) (*models.Section, error)
+	UpdateSection(id uint, courseID, termID *uint, capacity int, schedule string, professorID *uint) (*models.Section, error)
 	DeleteSection(id uint) error
 
 	// Enrollments
@@ -110,6 +112,14 @@ func (s *academicService) UpdateTerm(id uint, name string, start, end time.Time,
 
 func (s *academicService) DeleteTerm(id uint) error {
 	return s.repo.DeleteTerm(id)
+}
+
+func (s *academicService) ListCourses(deptID *uint) ([]models.Course, error) {
+	if deptID != nil {
+		return s.repo.GetCoursesByDepartment(*deptID)
+	}
+
+	return s.repo.GetAllCourses()
 }
 
 // Course logic
@@ -206,7 +216,7 @@ func (s *academicService) ensureNoDuplicateEnrollment(studentID, sectionID uint)
 	return nil
 }
 
-func (s *academicService) UpdateCourse(id uint, code, name string, credits int, desc string, prerequisiteIDs []uint) (*models.Course, error) {
+func (s *academicService) UpdateCourse(id uint, code, name string, credits int, desc string, deptID *uint, prerequisiteIDs []uint) (*models.Course, error) {
 	if credits <= 0 {
 		return nil, errors.New("course credits must be greater than zero")
 	}
@@ -222,6 +232,9 @@ func (s *academicService) UpdateCourse(id uint, code, name string, credits int, 
 	course.Name = name
 	course.Credits = credits
 	course.Description = desc
+	if deptID != nil {
+		course.DepartmentID = *deptID
+	}
 	if err := s.repo.UpdateCourse(course); err != nil {
 		return nil, err
 	}
@@ -252,7 +265,20 @@ func (s *academicService) CreateSection(courseID, termID uint, capacity int, sch
 	return s.repo.GetSectionByID(section.ID)
 }
 
-func (s *academicService) UpdateSection(id uint, capacity int, schedule string, professorID *uint) (*models.Section, error) {
+func (s *academicService) ListSections(courseID, termID, profID *uint) ([]models.Section, error) {
+	switch {
+	case courseID != nil:
+		return s.repo.GetSectionsByCourse(*courseID)
+	case termID != nil:
+		return s.repo.GetSectionsByTerm(*termID)
+	case profID != nil:
+		return s.repo.GetSectionsByProfessor(*profID)
+	default:
+		return s.repo.GetAllSections()
+	}
+}
+
+func (s *academicService) UpdateSection(id uint, courseID, termID *uint, capacity int, schedule string, professorID *uint) (*models.Section, error) {
 	if capacity <= 0 {
 		return nil, errors.New("section capacity must be greater than zero")
 	}
@@ -263,6 +289,12 @@ func (s *academicService) UpdateSection(id uint, capacity int, schedule string, 
 	section, err := s.repo.GetSectionByID(id)
 	if err != nil {
 		return nil, err
+	}
+	if courseID != nil {
+		section.CourseID = *courseID
+	}
+	if termID != nil {
+		section.AcademicTermID = *termID
 	}
 	section.Capacity = capacity
 	section.Schedule = schedule
