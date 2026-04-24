@@ -196,6 +196,12 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			admin.POST("/academic/sections/:section_id/exam-schedule", academicHandler.CreateExamSchedule)
 			admin.PATCH("/academic/sections/:section_id/exam-schedule", academicHandler.UpdateExamSchedule)
 			admin.POST("/academic/sections/:section_id/exam-schedule/publish", academicHandler.PublishExamSchedule)
+			admin.GET("/academic/sections/:section_id/group-projects", academicHandler.ListGroupProjects)
+			admin.POST("/academic/sections/:section_id/group-projects", academicHandler.CreateGroupProject)
+			admin.PATCH("/academic/sections/:section_id/group-projects/:project_id", academicHandler.UpdateGroupProject)
+			admin.DELETE("/academic/sections/:section_id/group-projects/:project_id", academicHandler.DeleteGroupProject)
+			admin.POST("/academic/sections/:section_id/group-projects/:project_id/members", academicHandler.AddGroupProjectMember)
+			admin.DELETE("/academic/sections/:section_id/group-projects/:project_id/members/:member_id", academicHandler.RemoveGroupProjectMember)
 
 			admin.GET("/organizations/universities", orgHandler.GetUniversities)
 			admin.POST("/organizations/universities", orgHandler.CreateUniversity)

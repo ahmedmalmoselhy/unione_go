@@ -101,6 +101,26 @@ type UpdateExamScheduleInput struct {
 	Location  *string    `json:"location"`
 }
 
+type CreateGroupProjectInput struct {
+	Title       string     `json:"title" binding:"required"`
+	Description string     `json:"description"`
+	DueAt       *time.Time `json:"due_at"`
+	MaxMembers  int        `json:"max_members"`
+	IsActive    *bool      `json:"is_active"`
+}
+
+type UpdateGroupProjectInput struct {
+	Title       *string    `json:"title"`
+	Description *string    `json:"description"`
+	DueAt       *time.Time `json:"due_at"`
+	MaxMembers  *int       `json:"max_members"`
+	IsActive    *bool      `json:"is_active"`
+}
+
+type AddGroupProjectMemberInput struct {
+	StudentID uint `json:"student_id" binding:"required"`
+}
+
 func (h *AcademicHandler) CreateTerm(c *gin.Context) {
 	var input CreateTermInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -739,6 +759,168 @@ func (h *AcademicHandler) RemoveTeachingAssistant(c *gin.Context) {
 
 	if err := h.academicService.RemoveTeachingAssistant(sectionID, assignmentID); err != nil {
 		apiutil.Error(c, http.StatusNotFound, "remove_teaching_assistant_failed", err.Error())
+		return
+	}
+
+	apiutil.NoContent(c)
+}
+
+func (h *AcademicHandler) ListGroupProjects(c *gin.Context) {
+	sectionID, err := apiutil.ParseUintParam(c, "section_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_section_id", err.Error())
+		return
+	}
+
+	projects, err := h.academicService.ListGroupProjects(sectionID)
+	if err != nil {
+		apiutil.Error(c, http.StatusNotFound, "list_group_projects_failed", err.Error())
+		return
+	}
+
+	apiutil.Success(c, http.StatusOK, projects)
+}
+
+func (h *AcademicHandler) CreateGroupProject(c *gin.Context) {
+	sectionID, err := apiutil.ParseUintParam(c, "section_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_section_id", err.Error())
+		return
+	}
+
+	var input CreateGroupProjectInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
+		return
+	}
+
+	createdByUserID, ok := middlewares.GetUserID(c)
+	var createdBy *uint
+	if ok {
+		createdBy = &createdByUserID
+	}
+
+	maxMembers := input.MaxMembers
+	if maxMembers == 0 {
+		maxMembers = 5
+	}
+	isActive := true
+	if input.IsActive != nil {
+		isActive = *input.IsActive
+	}
+
+	project, err := h.academicService.CreateGroupProject(sectionID, input.Title, input.Description, input.DueAt, maxMembers, isActive, createdBy)
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "create_group_project_failed", err.Error())
+		return
+	}
+
+	apiutil.Success(c, http.StatusCreated, project)
+}
+
+func (h *AcademicHandler) UpdateGroupProject(c *gin.Context) {
+	sectionID, err := apiutil.ParseUintParam(c, "section_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_section_id", err.Error())
+		return
+	}
+
+	projectID, err := apiutil.ParseUintParam(c, "project_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_project_id", err.Error())
+		return
+	}
+
+	var input UpdateGroupProjectInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
+		return
+	}
+
+	project, err := h.academicService.UpdateGroupProject(sectionID, projectID, input.Title, input.Description, input.DueAt, input.MaxMembers, input.IsActive)
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "update_group_project_failed", err.Error())
+		return
+	}
+
+	apiutil.Success(c, http.StatusOK, project)
+}
+
+func (h *AcademicHandler) DeleteGroupProject(c *gin.Context) {
+	sectionID, err := apiutil.ParseUintParam(c, "section_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_section_id", err.Error())
+		return
+	}
+
+	projectID, err := apiutil.ParseUintParam(c, "project_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_project_id", err.Error())
+		return
+	}
+
+	if err := h.academicService.DeleteGroupProject(sectionID, projectID); err != nil {
+		apiutil.Error(c, http.StatusNotFound, "delete_group_project_failed", err.Error())
+		return
+	}
+
+	apiutil.NoContent(c)
+}
+
+func (h *AcademicHandler) AddGroupProjectMember(c *gin.Context) {
+	sectionID, err := apiutil.ParseUintParam(c, "section_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_section_id", err.Error())
+		return
+	}
+
+	projectID, err := apiutil.ParseUintParam(c, "project_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_project_id", err.Error())
+		return
+	}
+
+	var input AddGroupProjectMemberInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "validation_error", err.Error())
+		return
+	}
+
+	member, created, err := h.academicService.AddGroupProjectMember(sectionID, projectID, input.StudentID)
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "add_group_project_member_failed", err.Error())
+		return
+	}
+
+	status := http.StatusOK
+	if created {
+		status = http.StatusCreated
+	}
+
+	apiutil.Success(c, status, member)
+}
+
+func (h *AcademicHandler) RemoveGroupProjectMember(c *gin.Context) {
+	sectionID, err := apiutil.ParseUintParam(c, "section_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_section_id", err.Error())
+		return
+	}
+
+	projectID, err := apiutil.ParseUintParam(c, "project_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_project_id", err.Error())
+		return
+	}
+
+	memberID, err := apiutil.ParseUintParam(c, "member_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_member_id", err.Error())
+		return
+	}
+
+	if err := h.academicService.RemoveGroupProjectMember(sectionID, projectID, memberID); err != nil {
+		apiutil.Error(c, http.StatusNotFound, "remove_group_project_member_failed", err.Error())
 		return
 	}
 

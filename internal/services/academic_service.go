@@ -66,6 +66,14 @@ type AcademicService interface {
 	PublishExamSchedule(sectionID uint) (*models.Exam, error)
 	GetExamsBySection(sectionID uint) ([]models.Exam, error)
 
+	// Group projects
+	ListGroupProjects(sectionID uint) ([]models.GroupProject, error)
+	CreateGroupProject(sectionID uint, title, description string, dueAt *time.Time, maxMembers int, isActive bool, createdByUserID *uint) (*models.GroupProject, error)
+	UpdateGroupProject(sectionID, projectID uint, title, description *string, dueAt *time.Time, maxMembers *int, isActive *bool) (*models.GroupProject, error)
+	DeleteGroupProject(sectionID, projectID uint) error
+	AddGroupProjectMember(sectionID, projectID, studentID uint) (*models.GroupProjectMember, bool, error)
+	RemoveGroupProjectMember(sectionID, projectID, memberID uint) error
+
 	// GPA Calculation
 	CalculateGPA(studentID uint) (float64, error)
 }
@@ -640,6 +648,146 @@ func (s *academicService) PublishExamSchedule(sectionID uint) (*models.Exam, err
 
 func (s *academicService) GetExamsBySection(sectionID uint) ([]models.Exam, error) {
 	return s.repo.GetExamsBySection(sectionID)
+}
+
+func (s *academicService) ListGroupProjects(sectionID uint) ([]models.GroupProject, error) {
+	if _, err := s.repo.GetSectionByID(sectionID); err != nil {
+		return nil, errors.New("section not found")
+	}
+
+	return s.repo.ListGroupProjects(sectionID)
+}
+
+func (s *academicService) CreateGroupProject(sectionID uint, title, description string, dueAt *time.Time, maxMembers int, isActive bool, createdByUserID *uint) (*models.GroupProject, error) {
+	if _, err := s.repo.GetSectionByID(sectionID); err != nil {
+		return nil, errors.New("section not found")
+	}
+	if maxMembers <= 0 {
+		return nil, errors.New("max_members must be greater than zero")
+	}
+
+	project := &models.GroupProject{
+		SectionID:       sectionID,
+		Title:           title,
+		Description:     description,
+		DueAt:           dueAt,
+		MaxMembers:      maxMembers,
+		IsActive:        isActive,
+		CreatedByUserID: createdByUserID,
+	}
+	if err := s.repo.CreateGroupProject(project); err != nil {
+		return nil, err
+	}
+
+	return s.repo.GetGroupProject(sectionID, project.ID)
+}
+
+func (s *academicService) UpdateGroupProject(sectionID, projectID uint, title, description *string, dueAt *time.Time, maxMembers *int, isActive *bool) (*models.GroupProject, error) {
+	project, err := s.repo.GetGroupProject(sectionID, projectID)
+	if err != nil {
+		return nil, errors.New("group project not found")
+	}
+
+	if title != nil {
+		project.Title = *title
+	}
+	if description != nil {
+		project.Description = *description
+	}
+	if dueAt != nil {
+		project.DueAt = dueAt
+	}
+	if maxMembers != nil {
+		if *maxMembers <= 0 {
+			return nil, errors.New("max_members must be greater than zero")
+		}
+		if len(project.Members) > *maxMembers {
+			return nil, errors.New("max_members cannot be less than current member count")
+		}
+		project.MaxMembers = *maxMembers
+	}
+	if isActive != nil {
+		project.IsActive = *isActive
+	}
+
+	if err := s.repo.UpdateGroupProject(project); err != nil {
+		return nil, err
+	}
+
+	return s.repo.GetGroupProject(sectionID, project.ID)
+}
+
+func (s *academicService) DeleteGroupProject(sectionID, projectID uint) error {
+	project, err := s.repo.GetGroupProject(sectionID, projectID)
+	if err != nil {
+		return errors.New("group project not found")
+	}
+
+	return s.repo.DeleteGroupProject(project.ID)
+}
+
+func (s *academicService) AddGroupProjectMember(sectionID, projectID, studentID uint) (*models.GroupProjectMember, bool, error) {
+	project, err := s.repo.GetGroupProject(sectionID, projectID)
+	if err != nil {
+		return nil, false, errors.New("group project not found")
+	}
+
+	student, err := s.userRepo.FindByID(studentID)
+	if err != nil {
+		return nil, false, errors.New("student not found")
+	}
+	if student.Role != models.RoleStudent {
+		return nil, false, errors.New("user is not a student")
+	}
+
+	enrollment, err := s.repo.GetEnrollment(studentID, sectionID)
+	if err != nil || enrollment.Status == "dropped" {
+		return nil, false, errors.New("student must be enrolled in this section")
+	}
+
+	existing, err := s.repo.GetGroupProjectMemberByStudent(projectID, studentID)
+	if err == nil {
+		return existing, false, nil
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, false, err
+	}
+
+	if _, err := s.repo.GetSectionGroupProjectMember(sectionID, studentID); err == nil {
+		return nil, false, errors.New("student is already assigned to another group project in this section")
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, false, err
+	}
+
+	if len(project.Members) >= project.MaxMembers {
+		return nil, false, errors.New("group project is at maximum capacity")
+	}
+
+	member := &models.GroupProjectMember{
+		GroupProjectID: project.ID,
+		StudentID:      studentID,
+		JoinedAt:       time.Now().UTC(),
+	}
+	if err := s.repo.CreateGroupProjectMember(member); err != nil {
+		return nil, false, err
+	}
+
+	createdMember, err := s.repo.GetGroupProjectMember(project.ID, member.ID)
+	return createdMember, true, err
+}
+
+func (s *academicService) RemoveGroupProjectMember(sectionID, projectID, memberID uint) error {
+	project, err := s.repo.GetGroupProject(sectionID, projectID)
+	if err != nil {
+		return errors.New("group project not found")
+	}
+
+	member, err := s.repo.GetGroupProjectMember(project.ID, memberID)
+	if err != nil {
+		return errors.New("group project member not found")
+	}
+
+	return s.repo.DeleteGroupProjectMember(member.ID)
 }
 
 // GPA Calculation logic

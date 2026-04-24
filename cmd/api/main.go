@@ -36,6 +36,8 @@ func main() {
 			&models.Attendance{},
 			&models.Announcement{},
 			&models.Exam{},
+			&models.GroupProject{},
+			&models.GroupProjectMember{},
 			&models.Waitlist{},
 			&models.CourseRating{},
 		)

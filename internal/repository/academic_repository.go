@@ -60,6 +60,18 @@ type AcademicRepository interface {
 	GetExamsBySection(sectionID uint) ([]models.Exam, error)
 	UpdateExam(exam *models.Exam) error
 
+	// Group projects
+	ListGroupProjects(sectionID uint) ([]models.GroupProject, error)
+	GetGroupProject(sectionID, projectID uint) (*models.GroupProject, error)
+	CreateGroupProject(project *models.GroupProject) error
+	UpdateGroupProject(project *models.GroupProject) error
+	DeleteGroupProject(id uint) error
+	GetGroupProjectMember(projectID, memberID uint) (*models.GroupProjectMember, error)
+	GetGroupProjectMemberByStudent(projectID, studentID uint) (*models.GroupProjectMember, error)
+	GetSectionGroupProjectMember(sectionID, studentID uint) (*models.GroupProjectMember, error)
+	CreateGroupProjectMember(member *models.GroupProjectMember) error
+	DeleteGroupProjectMember(id uint) error
+
 	// Waitlist
 	CreateWaitlist(waitlist *models.Waitlist) error
 	GetWaitlistBySection(sectionID uint) ([]models.Waitlist, error)
@@ -296,6 +308,60 @@ func (r *academicRepository) GetExamsBySection(sectionID uint) ([]models.Exam, e
 
 func (r *academicRepository) UpdateExam(exam *models.Exam) error {
 	return r.db.Save(exam).Error
+}
+
+func (r *academicRepository) ListGroupProjects(sectionID uint) ([]models.GroupProject, error) {
+	var projects []models.GroupProject
+	err := r.db.Preload("Members").Preload("Members.Student").Where("section_id = ?", sectionID).Order("id asc").Find(&projects).Error
+	return projects, err
+}
+
+func (r *academicRepository) GetGroupProject(sectionID, projectID uint) (*models.GroupProject, error) {
+	var project models.GroupProject
+	err := r.db.Preload("Members").Preload("Members.Student").Where("section_id = ? AND id = ?", sectionID, projectID).First(&project).Error
+	return &project, err
+}
+
+func (r *academicRepository) CreateGroupProject(project *models.GroupProject) error {
+	return r.db.Create(project).Error
+}
+
+func (r *academicRepository) UpdateGroupProject(project *models.GroupProject) error {
+	return r.db.Save(project).Error
+}
+
+func (r *academicRepository) DeleteGroupProject(id uint) error {
+	return r.db.Delete(&models.GroupProject{}, id).Error
+}
+
+func (r *academicRepository) GetGroupProjectMember(projectID, memberID uint) (*models.GroupProjectMember, error) {
+	var member models.GroupProjectMember
+	err := r.db.Preload("Student").Where("group_project_id = ? AND id = ?", projectID, memberID).First(&member).Error
+	return &member, err
+}
+
+func (r *academicRepository) GetGroupProjectMemberByStudent(projectID, studentID uint) (*models.GroupProjectMember, error) {
+	var member models.GroupProjectMember
+	err := r.db.Preload("Student").Where("group_project_id = ? AND student_id = ?", projectID, studentID).First(&member).Error
+	return &member, err
+}
+
+func (r *academicRepository) GetSectionGroupProjectMember(sectionID, studentID uint) (*models.GroupProjectMember, error) {
+	var member models.GroupProjectMember
+	err := r.db.
+		Joins("JOIN group_projects ON group_projects.id = group_project_members.group_project_id").
+		Where("group_projects.section_id = ? AND group_project_members.student_id = ?", sectionID, studentID).
+		Preload("Student").
+		First(&member).Error
+	return &member, err
+}
+
+func (r *academicRepository) CreateGroupProjectMember(member *models.GroupProjectMember) error {
+	return r.db.Create(member).Error
+}
+
+func (r *academicRepository) DeleteGroupProjectMember(id uint) error {
+	return r.db.Delete(&models.GroupProjectMember{}, id).Error
 }
 
 // Waitlist implementations

@@ -108,6 +108,35 @@ type Exam struct {
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
+type GroupProject struct {
+	ID              uint                 `gorm:"primaryKey" json:"id"`
+	SectionID       uint                 `gorm:"not null;index" json:"section_id"`
+	Section         *Section             `json:"section,omitempty"`
+	Title           string               `gorm:"not null" json:"title"`
+	Description     string               `json:"description"`
+	DueAt           *time.Time           `json:"due_at"`
+	MaxMembers      int                  `gorm:"default:5" json:"max_members"`
+	IsActive        bool                 `gorm:"default:true" json:"is_active"`
+	CreatedByUserID *uint                `json:"created_by_user_id"`
+	CreatedBy       *User                `json:"created_by,omitempty"`
+	Members         []GroupProjectMember `json:"members,omitempty"`
+	CreatedAt       time.Time            `json:"created_at"`
+	UpdatedAt       time.Time            `json:"updated_at"`
+	DeletedAt       gorm.DeletedAt       `gorm:"index" json:"-"`
+}
+
+type GroupProjectMember struct {
+	ID             uint           `gorm:"primaryKey" json:"id"`
+	GroupProjectID uint           `gorm:"uniqueIndex:idx_group_project_member;not null" json:"group_project_id"`
+	GroupProject   *GroupProject  `json:"group_project,omitempty"`
+	StudentID      uint           `gorm:"uniqueIndex:idx_group_project_member;not null" json:"student_id"`
+	Student        *User          `json:"student,omitempty"`
+	JoinedAt       time.Time      `json:"joined_at"`
+	CreatedAt      time.Time      `json:"created_at"`
+	UpdatedAt      time.Time      `json:"updated_at"`
+	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
 type Waitlist struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
 	StudentID uint           `gorm:"uniqueIndex:idx_student_section_waitlist;not null" json:"student_id"`

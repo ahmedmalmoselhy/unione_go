@@ -41,11 +41,12 @@ The Go port is rapidly moving towards parity. Phase 4 (Professor Domain) is now 
 - `GET|POST|DELETE /api/v1/admin/academic/sections/:section_id/teaching-assistants`
 - `GET|POST|PATCH /api/v1/admin/academic/sections/:section_id/exam-schedule`
 - `POST /api/v1/admin/academic/sections/:section_id/exam-schedule/publish`
+- `GET|POST|PATCH|DELETE /api/v1/admin/academic/sections/:section_id/group-projects...`
 - `GET|POST /api/v1/academic/...` for selected attendance, GPA, grade-import, and exam flows
 - `POST /api/v1/announcements/`
 
 ## Main Gaps
 
-1. Implement group projects and import templates under the admin domain.
+1. Implement import templates under the admin domain.
 2. Implement webhooks, analytics, exports, and stronger notification coverage.
 3. Add automated tests and fuller API documentation.
