@@ -348,7 +348,7 @@ That work unlocks almost every later phase.
 - [x] Teaching assistants
 - [x] Exam schedule publish flow
 - [x] Group projects
-- [ ] Admin imports/templates
+- [x] Admin imports/templates
 
 ### Phase 6
 

@@ -8,11 +8,15 @@ The current Go port implements a partial UniOne backend with working coverage in
 - authentication and JWT-protected identity lookup
 - organization hierarchy CRUD for universities, faculties, and departments
 - employee management under faculties
+- admin academic CRUD for terms, courses, sections, faculties, and departments
 - Excel-based student import
 - attendance recording and lookup
 - GPA lookup
 - grade import from uploaded files
-- exam creation and listing
+- exam scheduling and publish workflow
+- teaching assistant assignment APIs
+- group project CRUD and membership management
+- import template downloads for student and grade imports
 - announcement creation with notification service wiring
 
 This repository is not yet at feature parity with the mature Laravel, Django, Node.js, or Rails ports.
@@ -32,6 +36,7 @@ The active router exposes:
 - `/api/v1/auth/*`
 - `/api/v1/organizations/*`
 - `/api/v1/academic/*`
+- `/api/v1/admin/*`
 - `/api/v1/announcements`
 
 Some additional handlers and models exist in the codebase, but the public route surface is still intentionally narrower than the mature ports.
@@ -46,6 +51,6 @@ Some additional handlers and models exist in the codebase, but the public route 
 
 ## Status
 
-Partial backend implementation in progress.
+Expanded backend implementation in progress.
 
-Working foundations are in place, but major UniOne areas are still missing, including the broader student/professor/admin API surface, webhooks, analytics, exports, and test coverage.
+Working foundations are in place, but major UniOne areas are still missing, including richer communication flows, webhooks, analytics, exports, and test coverage.

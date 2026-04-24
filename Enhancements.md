@@ -1,12 +1,12 @@
 # UniOne Go - Enhancements
 
-Last Updated: April 23, 2026
-Current Status: Phase 3 Student Domain implemented
+Last Updated: April 24, 2026
+Current Status: Phase 5 Admin Academic Management completed
 Implementation: Go (Gin + GORM)
 
 ## Overview
 
-The Go port is rapidly achieving feature parity. Phase 3 (Student Domain) is now fully implemented, providing a robust self-service portal for students.
+The Go port has completed Phase 5 and now includes a meaningful admin academic surface in addition to the student and professor domains.
 
 ## Implemented Foundations
 
@@ -59,13 +59,19 @@ The Go port is rapidly achieving feature parity. Phase 3 (Student Domain) is now
 - [x] Section-scoped announcement creation
 - [x] Professor weekly schedule
 
+### Admin Academic Management (Phase 5)
+- [x] Admin academic CRUD for terms, courses, sections, faculties, and departments
+- [x] Teaching assistant assignment APIs
+- [x] Exam schedule show/create/update/publish workflow
+- [x] Group project CRUD and membership management
+- [x] Student and grade import template downloads
+
 ### Communication
 - [x] Announcement creation endpoint (Global, Faculty, Section)
 - [x] Notification service wiring behind announcement creation
 
 ## Not Yet Implemented At Parity
 
-- Broad admin CRUD API beyond the academic baseline
 - Webhooks
 - Analytics and reporting
 - Export flows (beyond ICS)
@@ -74,6 +80,6 @@ The Go port is rapidly achieving feature parity. Phase 3 (Student Domain) is now
 
 ## Next Steps
 
-1. Phase 5: Admin Academic Management (TAs, exam scheduling, group projects).
-2. Phase 6: Communication and richer notification inbox flows.
-3. Phase 7: Documents, Imports, and Exports (PDF transcripts, grade imports hardening).
+1. Phase 6: Communication and richer notification inbox flows.
+2. Phase 7: Documents, Imports, and Exports (PDF transcripts, grade imports hardening).
+3. Phase 8: Audit, webhooks, and governance.

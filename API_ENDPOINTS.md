@@ -201,6 +201,11 @@ Admin routes are currently mounted under `/api/v1/admin`.
 - `PUT /organizations/departments/:id`
 - `DELETE /organizations/departments/:id`
 
+### Import Templates
+
+- `GET /import-templates/students`
+- `GET /import-templates/grades`
+
 ## Student Portal
 
 Student portal routes are mounted under `/api/v1/student` and require a `student` role.

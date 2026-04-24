@@ -1,12 +1,12 @@
 # UniOne Go - Current Status
 
-Last Updated: April 23, 2026
-Project Phase: Phase 5 Admin Academic Management in progress
+Last Updated: April 24, 2026
+Project Phase: Phase 5 Admin Academic Management completed
 Overall Status: ACTIVE DEVELOPMENT
 
 ## Summary
 
-The Go port is rapidly moving towards parity. Phase 4 (Professor Domain) is now complete, providing a full self-service portal for professors.
+The Go port is rapidly moving towards parity. Phase 5 is now complete, adding admin academic management for sections, teaching assistants, exam schedule publishing, group projects, and import templates.
 
 ## Verified Implementation Progress
 
@@ -20,6 +20,7 @@ The Go port is rapidly moving towards parity. Phase 4 (Professor Domain) is now 
 | Student management | Complete | Admin student CRUD + Student Portal (profile, transcript, schedule, enrollments, waitlist, ratings) |
 | Professor management | Complete | Admin professor CRUD + Professor Portal (profile, roster, grading, attendance, announcements, schedule) |
 | Academic operations | Expanded baseline | Terms, courses, sections, enrollments, grade updates, attendance, GPA, exams |
+| Admin academic management | Complete | Admin academic CRUD, teaching assistants, exam schedule publish flow, group projects, import templates |
 | Announcements | Expanded baseline | Global, faculty, and section-scoped announcements implemented |
 | Student/professor/admin portals | Expanded baseline | Student and Professor portals complete; Admin academic management routes now mounted |
 | Webhooks, analytics, exports, tests | Not implemented | No visible parity implementation yet |
@@ -42,11 +43,12 @@ The Go port is rapidly moving towards parity. Phase 4 (Professor Domain) is now 
 - `GET|POST|PATCH /api/v1/admin/academic/sections/:section_id/exam-schedule`
 - `POST /api/v1/admin/academic/sections/:section_id/exam-schedule/publish`
 - `GET|POST|PATCH|DELETE /api/v1/admin/academic/sections/:section_id/group-projects...`
+- `GET /api/v1/admin/import-templates/...`
 - `GET|POST /api/v1/academic/...` for selected attendance, GPA, grade-import, and exam flows
 - `POST /api/v1/announcements/`
 
 ## Main Gaps
 
-1. Implement import templates under the admin domain.
+1. Implement communication flows beyond the current announcement baseline, including inbox/read tracking and background delivery.
 2. Implement webhooks, analytics, exports, and stronger notification coverage.
 3. Add automated tests and fuller API documentation.

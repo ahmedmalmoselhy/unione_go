@@ -29,6 +29,7 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 
 	employeeService := services.NewEmployeeService(userRepo)
 	employeeHandler := handlers.NewEmployeeHandler(employeeService)
+	templateHandler := handlers.NewTemplateHandler()
 
 	studentService := services.NewStudentService(userRepo, orgRepo)
 	studentHandler := handlers.NewStudentHandler(studentService)
@@ -202,6 +203,8 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			admin.DELETE("/academic/sections/:section_id/group-projects/:project_id", academicHandler.DeleteGroupProject)
 			admin.POST("/academic/sections/:section_id/group-projects/:project_id/members", academicHandler.AddGroupProjectMember)
 			admin.DELETE("/academic/sections/:section_id/group-projects/:project_id/members/:member_id", academicHandler.RemoveGroupProjectMember)
+			admin.GET("/import-templates/students", templateHandler.DownloadStudentsImportTemplate)
+			admin.GET("/import-templates/grades", templateHandler.DownloadGradesImportTemplate)
 
 			admin.GET("/organizations/universities", orgHandler.GetUniversities)
 			admin.POST("/organizations/universities", orgHandler.CreateUniversity)
