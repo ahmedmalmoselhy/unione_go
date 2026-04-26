@@ -361,11 +361,11 @@ That work unlocks almost every later phase.
 
 ### Phase 7
 
-- [ ] Students import hardening
-- [ ] Grades import hardening
-- [ ] Export endpoints
-- [ ] Transcript PDF
-- [ ] Import/export templates
+- [x] Students import hardening
+- [x] Grades import hardening
+- [x] Export endpoints
+- [x] Transcript PDF
+- [x] Import/export templates
 
 ### Phase 8
 

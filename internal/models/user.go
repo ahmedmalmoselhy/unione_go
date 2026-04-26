@@ -16,24 +16,24 @@ const (
 )
 
 type User struct {
-	ID                  uint                       `gorm:"primaryKey" json:"id"`
-	Email               string                     `gorm:"uniqueIndex;not null" json:"email"`
-	Password            string                     `gorm:"not null" json:"-"`
-	FirstName           string                     `json:"first_name"`
-	LastName            string                     `json:"last_name"`
-	Role                Role                       `gorm:"type:varchar(20);not null" json:"role"`
-	NationalID          string                     `gorm:"uniqueIndex" json:"national_id"`
-	Phone               string                     `json:"phone"`
-	Gender              string                     `gorm:"type:varchar(10)" json:"gender"`
-	DateOfBirth         *time.Time                 `json:"date_of_birth"`
-	FacultyID           *uint                      `json:"faculty_id"`
-	DepartmentID        *uint                      `json:"department_id"`
-	Faculty             *Faculty                   `json:"-"`
-	Department          *Department                `json:"-"`
-	DepartmentTransfers []StudentDepartmentHistory `gorm:"foreignKey:StudentID" json:"department_transfers,omitempty"`
-	CreatedAt           time.Time                  `json:"created_at"`
-	UpdatedAt           time.Time                  `json:"updated_at"`
-	DeletedAt           gorm.DeletedAt             `gorm:"index" json:"-"`
+	ID                  uint                       `gorm:"primaryKey" json:"id" excel:"ID"`
+	Email               string                     `gorm:"uniqueIndex;not null" json:"email" excel:"Email"`
+	Password            string                     `gorm:"not null" json:"-" excel:"-"`
+	FirstName           string                     `json:"first_name" excel:"First Name"`
+	LastName            string                     `json:"last_name" excel:"Last Name"`
+	Role                Role                       `gorm:"type:varchar(20);not null" json:"role" excel:"Role"`
+	NationalID          string                     `gorm:"uniqueIndex" json:"national_id" excel:"National ID"`
+	Phone               string                     `json:"phone" excel:"Phone"`
+	Gender              string                     `gorm:"type:varchar(10)" json:"gender" excel:"Gender"`
+	DateOfBirth         *time.Time                 `json:"date_of_birth" excel:"Date of Birth"`
+	FacultyID           *uint                      `json:"faculty_id" excel:"Faculty ID"`
+	DepartmentID        *uint                      `json:"department_id" excel:"Department ID"`
+	Faculty             *Faculty                   `json:"-" excel:"-"`
+	Department          *Department                `json:"-" excel:"-"`
+	DepartmentTransfers []StudentDepartmentHistory `gorm:"foreignKey:StudentID" json:"department_transfers,omitempty" excel:"-"`
+	CreatedAt           time.Time                  `json:"created_at" excel:"Created At"`
+	UpdatedAt           time.Time                  `json:"updated_at" excel:"Updated At"`
+	DeletedAt           gorm.DeletedAt             `gorm:"index" json:"-" excel:"-"`
 }
 
 type StudentDepartmentHistory struct {

@@ -21,6 +21,15 @@ type EmployeeService interface {
 	UpdateEmployeeDetails(id uint, firstName, lastName string, facultyID uint) (*models.User, error)
 	DeleteEmployee(id uint) error
 	ImportStudentsFromExcel(file io.Reader, facultyID uint) (int, error)
+	ExportEmployees(facultyID *uint) ([]byte, error)
+}
+...
+func (s *employeeService) ExportEmployees(facultyID *uint) ([]byte, error) {
+	employees, err := s.ListEmployees(facultyID)
+	if err != nil {
+		return nil, err
+	}
+	return s.impExpSvc.ExportToExcel(employees, "Employees")
 }
 
 type employeeService struct {

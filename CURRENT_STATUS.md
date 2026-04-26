@@ -1,12 +1,12 @@
 # UniOne Go - Current Status
 
 Last Updated: April 24, 2026
-Project Phase: Phase 6 Communication, Notifications, and Delivery completed
+Project Phase: Phase 7 Documents, Imports, and Exports completed
 Overall Status: ACTIVE DEVELOPMENT
 
 ## Summary
 
-The Go port is rapidly moving towards parity. Phase 6 is now complete, adding a full notification system with inbox management, read-tracking for announcements, and automated delivery for grades and exams.
+The Go port is rapidly moving towards parity. Phase 7 is now complete, adding refined Excel imports for students and grades, comprehensive export endpoints (students, professors, employees, enrollments, grades), and official transcript PDF generation.
 
 ## Verified Implementation Progress
 
@@ -16,15 +16,15 @@ The Go port is rapidly moving towards parity. Phase 6 is now complete, adding a 
 | Auth and RBAC | Implemented baseline | Register, login, `me`, JWT auth middleware, role/scope checks |
 | API conventions | Implemented baseline | `/api/v1` health route, normalized error envelopes, request logging, validated config |
 | Organization management | Implemented baseline | Universities, faculties, and departments CRUD routes |
-| Employee management | Expanded baseline | Faculty employee CRUD, admin employee CRUD, optional faculty filtering, student Excel import |
-| Student management | Complete | Admin student CRUD + Student Portal (profile, transcript, schedule, enrollments, waitlist, ratings) |
-| Professor management | Complete | Admin professor CRUD + Professor Portal (profile, roster, grading, attendance, announcements, schedule) |
-| Academic operations | Expanded baseline | Terms, courses, sections, enrollments, grade updates, attendance, GPA, exams |
+| Employee management | Complete | Faculty employee CRUD, admin employee CRUD, refined student Excel import |
+| Student management | Complete | Admin student CRUD + Student Portal (profile, transcript PDF, schedule, enrollments, waitlist, ratings) |
+| Professor management | Complete | Admin professor CRUD + Professor Portal (profile, roster, grading, attendance, announcements, schedule, roster export) |
+| Academic operations | Complete | Terms, courses, sections, enrollments, grade updates, attendance, GPA, exams, grade import/export |
 | Admin academic management | Complete | Admin academic CRUD, teaching assistants, exam schedule publish flow, group projects, import templates |
 | Announcements | Complete | Shared list with visibility rules (Global, Faculty, Section) and read-tracking |
 | Notifications | Complete | Inbox management (mark-read, mark-all-read, delete) and automated triggers |
-| Student/professor/admin portals | Expanded baseline | Portal coverage includes communication and notification features |
-| Webhooks, analytics, exports, tests | Not implemented | No visible parity implementation yet |
+| Documents & Imports/Exports | Complete | Excel import/export for major entities, Transcript PDF generation |
+| Webhooks, analytics, exports, tests | Partial | Exports implemented; Webhooks and analytics remaining |
 
 ## Current Public Route Surface
 
@@ -37,19 +37,21 @@ The Go port is rapidly moving towards parity. Phase 6 is now complete, adding a 
 - `GET|POST|PUT|DELETE /api/v1/academic/sections...`
 - `POST|GET|DELETE /api/v1/academic/.../enrollments`
 - `PATCH /api/v1/academic/sections/:section_id/students/:student_id/grade`
-- `GET /api/v1/student/...` for profile, transcript, schedule, enrollments, waitlist, and ratings
+- `GET /api/v1/student/...` for profile, transcript PDF, schedule, enrollments, waitlist, and ratings
 - `GET|PATCH|POST /api/v1/professor/...` for profile, sections, roster, grading, attendance, and announcements
 - `GET|POST|PUT|DELETE /api/v1/organizations/...`
 - `GET|POST|DELETE /api/v1/admin/academic/sections/:section_id/teaching-assistants`
 - `GET|POST|PATCH /api/v1/admin/academic/sections/:section_id/exam-schedule`
 - `POST /api/v1/admin/academic/sections/:section_id/exam-schedule/publish`
 - `GET|POST|PATCH|DELETE /api/v1/admin/academic/sections/:section_id/group-projects...`
-- `GET /api/v1/admin/import-templates/...`
-- `GET|POST /api/v1/academic/...` for selected attendance, GPA, grade-import, and exam flows
-- `GET|POST /api/v1/announcements/` and `POST /api/v1/announcements/:id/read`
-- `GET|POST|DELETE /api/v1/notifications/...`
+- `GET /api/v1/admin/import-templates/...` (Refined to Excel)
+- `GET /api/v1/admin/students/export`
+- `GET /api/v1/admin/professors/export`
+- `GET /api/v1/admin/employees/export`
+- `GET /api/v1/academic/sections/:id/enrollments/export`
+- `GET /api/v1/academic/sections/:id/grades/export`
 
 ## Main Gaps
 
-1. Implement webhooks, analytics, exports, and stronger notification coverage.
+1. Implement webhooks and analytics.
 2. Add automated tests and fuller API documentation.
