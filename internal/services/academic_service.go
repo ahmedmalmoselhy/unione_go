@@ -9,7 +9,6 @@ import (
 
 	"github.com/ahmedmalmoselhy/unione_go/internal/models"
 	"github.com/ahmedmalmoselhy/unione_go/internal/repository"
-	"github.com/xuri/excelize/v2"
 	"gorm.io/gorm"
 )
 
@@ -79,13 +78,14 @@ type AcademicService interface {
 }
 
 type academicService struct {
-	repo     repository.AcademicRepository
-	userRepo repository.UserRepository
-	notifSvc NotificationService
+	repo      repository.AcademicRepository
+	userRepo  repository.UserRepository
+	notifSvc  NotificationService
+	impExpSvc ImportExportService
 }
 
-func NewAcademicService(repo repository.AcademicRepository, userRepo repository.UserRepository, notifSvc NotificationService) AcademicService {
-	return &academicService{repo: repo, userRepo: userRepo, notifSvc: notifSvc}
+func NewAcademicService(repo repository.AcademicRepository, userRepo repository.UserRepository, notifSvc NotificationService, impExpSvc ImportExportService) AcademicService {
+	return &academicService{repo: repo, userRepo: userRepo, notifSvc: notifSvc, impExpSvc: impExpSvc}
 }
 
 // Term logic
@@ -510,30 +510,32 @@ func (s *academicService) GetStudentAttendance(studentID, sectionID uint) ([]mod
 }
 
 func (s *academicService) ImportGradesFromExcel(file io.Reader, sectionID uint) (int, error) {
-	f, err := excelize.OpenReader(file)
+	rows, err := s.impExpSvc.ReadExcel(file, "Sheet1")
 	if err != nil {
-		return 0, fmt.Errorf("failed to open excel reader: %v", err)
-	}
-	defer f.Close()
-
-	rows, err := f.GetRows("Sheet1")
-	if err != nil {
-		return 0, fmt.Errorf("failed to get rows: %v", err)
+		return 0, err
 	}
 
 	successCount := 0
-	// Assume first row is header: Student ID, Grade
+	// Expected headers: Student ID (or Email), Grade
 	for i, row := range rows {
 		if i == 0 || len(row) < 2 {
 			continue
 		}
 
-		studentID, err := strconv.ParseUint(row[0], 10, 32)
+		studentIDStr := row[0]
+		gradeStr := row[1]
+
+		studentID, err := strconv.ParseUint(studentIDStr, 10, 32)
 		if err != nil {
-			continue
+			// Try looking up by email if it's not a numeric ID
+			user, err := s.userRepo.FindByEmail(studentIDStr)
+			if err != nil {
+				continue
+			}
+			studentID = uint64(user.ID)
 		}
 
-		grade, err := strconv.ParseFloat(row[1], 64)
+		grade, err := strconv.ParseFloat(gradeStr, 64)
 		if err != nil {
 			continue
 		}
