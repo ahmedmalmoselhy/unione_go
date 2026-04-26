@@ -4,10 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strconv"
+	"time"
 
 	"github.com/ahmedmalmoselhy/unione_go/internal/models"
 	"github.com/ahmedmalmoselhy/unione_go/internal/repository"
-	"github.com/xuri/excelize/v2"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -23,11 +24,12 @@ type EmployeeService interface {
 }
 
 type employeeService struct {
-	userRepo repository.UserRepository
+	userRepo  repository.UserRepository
+	impExpSvc ImportExportService
 }
 
-func NewEmployeeService(userRepo repository.UserRepository) EmployeeService {
-	return &employeeService{userRepo: userRepo}
+func NewEmployeeService(userRepo repository.UserRepository, impExpSvc ImportExportService) EmployeeService {
+	return &employeeService{userRepo: userRepo, impExpSvc: impExpSvc}
 }
 
 func (s *employeeService) CreateEmployee(email, password, firstName, lastName string, facultyID uint) (*models.User, error) {
@@ -119,39 +121,60 @@ func (s *employeeService) DeleteEmployee(id uint) error {
 }
 
 func (s *employeeService) ImportStudentsFromExcel(file io.Reader, facultyID uint) (int, error) {
-	f, err := excelize.OpenReader(file)
+	rows, err := s.impExpSvc.ReadExcel(file, "Sheet1")
 	if err != nil {
-		return 0, fmt.Errorf("failed to open excel reader: %v", err)
-	}
-	defer f.Close()
-
-	rows, err := f.GetRows("Sheet1")
-	if err != nil {
-		return 0, fmt.Errorf("failed to get rows: %v", err)
+		return 0, err
 	}
 
 	successCount := 0
-	// Assume first row is header: Email, Password, First Name, Last Name, Department ID (optional)
+	// Expected headers: National ID, Email, First Name, Last Name, Phone, Gender, Date of Birth (YYYY-MM-DD), Department ID
 	for i, row := range rows {
 		if i == 0 || len(row) < 4 {
 			continue
 		}
 
-		email := row[0]
-		password := row[1]
+		nationalID := row[0]
+		email := row[1]
 		firstName := row[2]
 		lastName := row[3]
 
-		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if nationalID == "" || email == "" || firstName == "" || lastName == "" {
+			continue
+		}
 
 		user := &models.User{
-			Email:     email,
-			Password:  string(hashedPassword),
-			FirstName: firstName,
-			LastName:  lastName,
-			Role:      models.RoleStudent,
-			FacultyID: &facultyID,
+			NationalID: nationalID,
+			Email:      email,
+			FirstName:  firstName,
+			LastName:   lastName,
+			Role:       models.RoleStudent,
+			FacultyID:  &facultyID,
 		}
+
+		// Optional fields
+		if len(row) > 4 {
+			user.Phone = row[4]
+		}
+		if len(row) > 5 {
+			user.Gender = row[5]
+		}
+		if len(row) > 6 && row[6] != "" {
+			dob, err := time.Parse("2006-01-02", row[6])
+			if err == nil {
+				user.DateOfBirth = &dob
+			}
+		}
+		if len(row) > 7 && row[7] != "" {
+			deptID, err := strconv.ParseUint(row[7], 10, 32)
+			if err == nil {
+				uDeptID := uint(deptID)
+				user.DepartmentID = &uDeptID
+			}
+		}
+
+		// Default password is National ID
+		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(nationalID), bcrypt.DefaultCost)
+		user.Password = string(hashedPassword)
 
 		if err := s.userRepo.CreateUser(user); err == nil {
 			successCount++
