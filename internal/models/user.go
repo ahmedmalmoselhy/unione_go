@@ -22,6 +22,10 @@ type User struct {
 	FirstName           string                     `json:"first_name"`
 	LastName            string                     `json:"last_name"`
 	Role                Role                       `gorm:"type:varchar(20);not null" json:"role"`
+	NationalID          string                     `gorm:"uniqueIndex" json:"national_id"`
+	Phone               string                     `json:"phone"`
+	Gender              string                     `gorm:"type:varchar(10)" json:"gender"`
+	DateOfBirth         *time.Time                 `json:"date_of_birth"`
 	FacultyID           *uint                      `json:"faculty_id"`
 	DepartmentID        *uint                      `json:"department_id"`
 	Faculty             *Faculty                   `json:"-"`
