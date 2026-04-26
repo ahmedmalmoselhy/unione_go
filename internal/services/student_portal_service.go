@@ -18,6 +18,7 @@ type StudentPortalService interface {
 	GetSchedule(studentID uint) (interface{}, error)
 	ExportScheduleICS(studentID uint) ([]byte, error)
 	GetAttendanceSummary(studentID uint) (interface{}, error)
+	ExportTranscriptPDF(studentID uint) ([]byte, error)
 	
 	// Waitlist
 	JoinWaitlist(studentID, sectionID uint) (*models.Waitlist, error)
@@ -29,16 +30,18 @@ type StudentPortalService interface {
 }
 
 type studentPortalService struct {
-	userRepo     repository.UserRepository
-	academicRepo repository.AcademicRepository
-	academicSvc  AcademicService
+	userRepo      repository.UserRepository
+	academicRepo  repository.AcademicRepository
+	academicSvc   AcademicService
+	transcriptSvc TranscriptService
 }
 
-func NewStudentPortalService(userRepo repository.UserRepository, academicRepo repository.AcademicRepository, academicSvc AcademicService) StudentPortalService {
+func NewStudentPortalService(userRepo repository.UserRepository, academicRepo repository.AcademicRepository, academicSvc AcademicService, transcriptSvc TranscriptService) StudentPortalService {
 	return &studentPortalService{
-		userRepo:     userRepo,
-		academicRepo: academicRepo,
-		academicSvc:  academicSvc,
+		userRepo:      userRepo,
+		academicRepo:  academicRepo,
+		academicSvc:   academicSvc,
+		transcriptSvc: transcriptSvc,
 	}
 }
 
@@ -174,6 +177,22 @@ func (s *studentPortalService) GetAttendanceSummary(studentID uint) (interface{}
 	}
 
 	return summary, nil
+}
+
+func (s *studentPortalService) ExportTranscriptPDF(studentID uint) ([]byte, error) {
+	student, err := s.userRepo.FindByID(studentID)
+	if err != nil {
+		return nil, err
+	}
+
+	enrollments, err := s.academicRepo.GetEnrollmentsByStudent(studentID)
+	if err != nil {
+		return nil, err
+	}
+
+	gpa, _ := s.academicSvc.CalculateGPA(studentID)
+
+	return s.transcriptSvc.GenerateTranscriptPDF(student, enrollments, gpa)
 }
 
 func (s *studentPortalService) JoinWaitlist(studentID, sectionID uint) (*models.Waitlist, error) {
