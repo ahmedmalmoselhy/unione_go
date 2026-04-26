@@ -1,21 +1,77 @@
 package handlers
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
 
-type TemplateHandler struct{}
+	"github.com/ahmedmalmoselhy/unione_go/internal/apiutil"
+	"github.com/ahmedmalmoselhy/unione_go/internal/services"
+	"github.com/gin-gonic/gin"
+)
 
-func NewTemplateHandler() *TemplateHandler {
-	return &TemplateHandler{}
+type TemplateHandler struct {
+	impExpSvc services.ImportExportService
+}
+
+func NewTemplateHandler(impExpSvc services.ImportExportService) *TemplateHandler {
+	return &TemplateHandler{impExpSvc: impExpSvc}
+}
+
+type StudentImportTemplate struct {
+	NationalID   string `excel:"National ID"`
+	Email        string `excel:"Email"`
+	FirstName    string `excel:"First Name"`
+	LastName     string `excel:"Last Name"`
+	Phone        string `excel:"Phone"`
+	Gender       string `excel:"Gender"`
+	DateOfBirth  string `excel:"Date of Birth (YYYY-MM-DD)"`
+	DepartmentID string `excel:"Department ID"`
 }
 
 func (h *TemplateHandler) DownloadStudentsImportTemplate(c *gin.Context) {
-	c.Header("Content-Type", "text/csv; charset=utf-8")
-	c.Header("Content-Disposition", `attachment; filename="students_import_template.csv"`)
-	c.String(200, "email,password,first_name,last_name,department_id\nstudent@example.edu,ChangeMe123,Jane,Doe,12\n")
+	data := []StudentImportTemplate{
+		{
+			NationalID:   "123456789",
+			Email:        "student@example.edu",
+			FirstName:    "Jane",
+			LastName:     "Doe",
+			Phone:        "0123456789",
+			Gender:       "female",
+			DateOfBirth:  "2000-01-01",
+			DepartmentID: "1",
+		},
+	}
+
+	excelData, err := h.impExpSvc.ExportToExcel(data, "Students Template")
+	if err != nil {
+		apiutil.Error(c, http.StatusInternalServerError, "template_generation_failed", err.Error())
+		return
+	}
+
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Header("Content-Disposition", "attachment; filename=students_import_template.xlsx")
+	c.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelData)
+}
+
+type GradeImportTemplate struct {
+	StudentID string `excel:"Student ID or Email"`
+	Grade     string `excel:"Grade"`
 }
 
 func (h *TemplateHandler) DownloadGradesImportTemplate(c *gin.Context) {
-	c.Header("Content-Type", "text/csv; charset=utf-8")
-	c.Header("Content-Disposition", `attachment; filename="grades_import_template.csv"`)
-	c.String(200, "student_id,grade\n1001,92.5\n")
+	data := []GradeImportTemplate{
+		{
+			StudentID: "1001",
+			Grade:     "92.5",
+		},
+	}
+
+	excelData, err := h.impExpSvc.ExportToExcel(data, "Grades Template")
+	if err != nil {
+		apiutil.Error(c, http.StatusInternalServerError, "template_generation_failed", err.Error())
+		return
+	}
+
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Header("Content-Disposition", "attachment; filename=grades_import_template.xlsx")
+	c.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelData)
 }

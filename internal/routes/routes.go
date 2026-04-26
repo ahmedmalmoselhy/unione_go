@@ -32,7 +32,7 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 
 	employeeService := services.NewEmployeeService(userRepo, impExpSvc)
 	employeeHandler := handlers.NewEmployeeHandler(employeeService)
-	templateHandler := handlers.NewTemplateHandler()
+	templateHandler := handlers.NewTemplateHandler(impExpSvc)
 
 	studentService := services.NewStudentService(userRepo, orgRepo, impExpSvc)
 	studentHandler := handlers.NewStudentHandler(studentService)
