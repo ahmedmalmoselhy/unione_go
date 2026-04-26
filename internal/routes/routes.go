@@ -106,6 +106,7 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 
 			// Import Students
 			orgs.POST("/faculties/:faculty_id/students/import", middlewares.RequireRole("admin", "employee"), middlewares.RequireFacultyScope(), employeeHandler.ImportStudents)
+			orgs.GET("/faculties/:faculty_id/employees/export", middlewares.RequireRole("admin"), employeeHandler.ExportEmployees)
 		}
 
 		// Academic Catalog & Enrollments
@@ -148,6 +149,10 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			// Exams
 			academic.POST("/sections/:section_id/exams", middlewares.RequireRole("admin", "employee", "professor"), academicHandler.CreateExam)
 			academic.GET("/sections/:section_id/exams", academicHandler.GetExams)
+
+			// Exports
+			academic.GET("/sections/:section_id/enrollments/export", middlewares.RequireRole("admin", "employee", "professor"), academicHandler.ExportEnrollments)
+			academic.GET("/sections/:section_id/grades/export", middlewares.RequireRole("admin", "professor"), academicHandler.ExportGrades)
 		}
 
 		// Announcements
@@ -170,6 +175,7 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		admin := v1.Group("/admin", middlewares.AuthMiddleware(cfg.JWTSecret), middlewares.RequireRole("admin", "employee"))
 		{
 			admin.GET("/students", studentHandler.ListStudents)
+			admin.GET("/students/export", studentHandler.ExportStudents)
 			admin.POST("/students", studentHandler.CreateStudent)
 			admin.GET("/students/:id", studentHandler.GetStudent)
 			admin.PUT("/students/:id", studentHandler.UpdateStudent)
@@ -178,12 +184,14 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			admin.GET("/students/:id/transfers", studentHandler.GetTransferHistory)
 
 			admin.GET("/professors", professorHandler.ListProfessors)
+			admin.GET("/professors/export", professorHandler.ExportProfessors)
 			admin.POST("/professors", professorHandler.CreateProfessor)
 			admin.GET("/professors/:id", professorHandler.GetProfessor)
 			admin.PUT("/professors/:id", professorHandler.UpdateProfessor)
 			admin.DELETE("/professors/:id", professorHandler.DeleteProfessor)
 
 			admin.GET("/employees", employeeHandler.ListEmployees)
+			admin.GET("/employees/export", employeeHandler.ExportEmployees)
 			admin.POST("/employees", employeeHandler.AdminCreateEmployee)
 			admin.GET("/employees/:id", employeeHandler.GetEmployee)
 			admin.PUT("/employees/:id", employeeHandler.AdminUpdateEmployee)
@@ -244,6 +252,7 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			student.GET("/profile", portalHandler.GetProfile)
 			student.GET("/enrollments", portalHandler.GetEnrollments)
 			student.GET("/transcript", portalHandler.GetTranscript)
+			student.GET("/transcript/export", portalHandler.ExportTranscriptPDF)
 			student.GET("/academic-history", portalHandler.GetAcademicHistory)
 			student.GET("/schedule", portalHandler.GetSchedule)
 			student.GET("/schedule/export", portalHandler.ExportScheduleICS)

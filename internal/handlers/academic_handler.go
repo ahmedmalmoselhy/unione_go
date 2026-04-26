@@ -603,6 +603,42 @@ func (h *AcademicHandler) GetExams(c *gin.Context) {
 	apiutil.Success(c, http.StatusOK, exams)
 }
 
+func (h *AcademicHandler) ExportEnrollments(c *gin.Context) {
+	sectionID, err := apiutil.ParseUintParam(c, "section_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_section_id", err.Error())
+		return
+	}
+
+	data, err := h.service.ExportEnrollments(sectionID)
+	if err != nil {
+		apiutil.Error(c, http.StatusInternalServerError, "export_failed", err.Error())
+		return
+	}
+
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Header("Content-Disposition", "attachment; filename=enrollments.xlsx")
+	c.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", data)
+}
+
+func (h *AcademicHandler) ExportGrades(c *gin.Context) {
+	sectionID, err := apiutil.ParseUintParam(c, "section_id")
+	if err != nil {
+		apiutil.Error(c, http.StatusBadRequest, "invalid_section_id", err.Error())
+		return
+	}
+
+	data, err := h.service.ExportGrades(sectionID)
+	if err != nil {
+		apiutil.Error(c, http.StatusInternalServerError, "export_failed", err.Error())
+		return
+	}
+
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Header("Content-Disposition", "attachment; filename=grades.xlsx")
+	c.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", data)
+}
+
 func (h *AcademicHandler) GetGPA(c *gin.Context) {
 	studentID, err := apiutil.ParseUintParam(c, "student_id")
 	if err != nil {

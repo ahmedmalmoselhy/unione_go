@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/ahmedmalmoselhy/unione_go/internal/apiutil"
 	"github.com/ahmedmalmoselhy/unione_go/internal/services"
@@ -142,4 +143,34 @@ func (h *ProfessorHandler) DeleteProfessor(c *gin.Context) {
 	}
 
 	apiutil.NoContent(c)
+}
+
+func (h *ProfessorHandler) ExportProfessors(c *gin.Context) {
+	var facultyID *uint
+	if fID := c.Query("faculty_id"); fID != "" {
+		id, err := strconv.ParseUint(fID, 10, 32)
+		if err == nil {
+			uID := uint(id)
+			facultyID = &uID
+		}
+	}
+
+	var deptID *uint
+	if dID := c.Query("department_id"); dID != "" {
+		id, err := strconv.ParseUint(dID, 10, 32)
+		if err == nil {
+			uID := uint(id)
+			deptID = &uID
+		}
+	}
+
+	data, err := h.professorService.ExportProfessors(facultyID, deptID)
+	if err != nil {
+		apiutil.Error(c, http.StatusInternalServerError, "export_failed", err.Error())
+		return
+	}
+
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Header("Content-Disposition", "attachment; filename=professors.xlsx")
+	c.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", data)
 }

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/ahmedmalmoselhy/unione_go/internal/apiutil"
 	"github.com/ahmedmalmoselhy/unione_go/internal/services"
@@ -218,4 +219,25 @@ func (h *EmployeeHandler) AdminUpdateEmployee(c *gin.Context) {
 	}
 
 	apiutil.Success(c, http.StatusOK, employee)
+}
+
+func (h *EmployeeHandler) ExportEmployees(c *gin.Context) {
+	var facultyID *uint
+	if fID := c.Query("faculty_id"); fID != "" {
+		id, err := strconv.ParseUint(fID, 10, 32)
+		if err == nil {
+			uID := uint(id)
+			facultyID = &uID
+		}
+	}
+
+	data, err := h.employeeService.ExportEmployees(facultyID)
+	if err != nil {
+		apiutil.Error(c, http.StatusInternalServerError, "export_failed", err.Error())
+		return
+	}
+
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Header("Content-Disposition", "attachment; filename=employees.xlsx")
+	c.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", data)
 }

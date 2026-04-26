@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/ahmedmalmoselhy/unione_go/internal/apiutil"
+	"github.com/ahmedmalmoselhy/unione_go/internal/middlewares"
 	"github.com/ahmedmalmoselhy/unione_go/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -86,6 +87,24 @@ func (h *StudentPortalHandler) GetAttendanceSummary(c *gin.Context) {
 		return
 	}
 	apiutil.Success(c, http.StatusOK, summary)
+}
+
+func (h *StudentPortalHandler) ExportTranscriptPDF(c *gin.Context) {
+	userID, exists := middlewares.GetUserID(c)
+	if !exists {
+		apiutil.Error(c, http.StatusUnauthorized, "unauthorized", "Authentication required")
+		return
+	}
+
+	data, err := h.portalService.ExportTranscriptPDF(userID)
+	if err != nil {
+		apiutil.Error(c, http.StatusInternalServerError, "export_failed", err.Error())
+		return
+	}
+
+	c.Header("Content-Type", "application/pdf")
+	c.Header("Content-Disposition", "attachment; filename=transcript.pdf")
+	c.Data(http.StatusOK, "application/pdf", data)
 }
 
 func (h *StudentPortalHandler) JoinWaitlist(c *gin.Context) {
