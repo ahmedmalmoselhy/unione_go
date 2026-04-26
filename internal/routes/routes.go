@@ -19,6 +19,9 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	r.Use(middlewares.RequestLogger())
 
 	// Dependency Injection
+	impExpSvc := services.NewImportExportService()
+	transcriptSvc := services.NewTranscriptService()
+
 	userRepo := repository.NewUserRepository(db)
 	authService := services.NewAuthService(userRepo, cfg)
 	authHandler := handlers.NewAuthHandler(authService)
@@ -27,14 +30,14 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	orgService := services.NewOrgService(orgRepo)
 	orgHandler := handlers.NewOrgHandler(orgService)
 
-	employeeService := services.NewEmployeeService(userRepo)
+	employeeService := services.NewEmployeeService(userRepo, impExpSvc)
 	employeeHandler := handlers.NewEmployeeHandler(employeeService)
 	templateHandler := handlers.NewTemplateHandler()
 
-	studentService := services.NewStudentService(userRepo, orgRepo)
+	studentService := services.NewStudentService(userRepo, orgRepo, impExpSvc)
 	studentHandler := handlers.NewStudentHandler(studentService)
 
-	professorService := services.NewProfessorService(userRepo, orgRepo)
+	professorService := services.NewProfessorService(userRepo, orgRepo, impExpSvc)
 	professorHandler := handlers.NewProfessorHandler(professorService)
 
 	annRepo := repository.NewAnnouncementRepository(db)
@@ -45,10 +48,10 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	annHandler := handlers.NewAnnouncementHandler(notifSvc)
 	notifHandler := handlers.NewNotificationHandler(notifSvc)
 
-	academicService := services.NewAcademicService(academicRepo, userRepo, notifSvc)
+	academicService := services.NewAcademicService(academicRepo, userRepo, notifSvc, impExpSvc)
 	academicHandler := handlers.NewAcademicHandler(academicService)
 
-	portalService := services.NewStudentPortalService(userRepo, academicRepo, academicService)
+	portalService := services.NewStudentPortalService(userRepo, academicRepo, academicService, transcriptSvc)
 	portalHandler := handlers.NewStudentPortalHandler(portalService)
 
 	profPortalService := services.NewProfessorPortalService(userRepo, academicRepo, annRepo, academicService, notifSvc)
