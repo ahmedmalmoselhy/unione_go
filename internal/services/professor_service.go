@@ -14,15 +14,17 @@ type ProfessorService interface {
 	GetProfessor(id uint) (*models.User, error)
 	UpdateProfessor(id uint, firstName, lastName string, facultyID uint, departmentID *uint) (*models.User, error)
 	DeleteProfessor(id uint) error
+	ExportProfessors(facultyID, departmentID *uint) ([]byte, error)
 }
 
 type professorService struct {
-	userRepo repository.UserRepository
-	orgRepo  repository.OrgRepository
+	userRepo  repository.UserRepository
+	orgRepo   repository.OrgRepository
+	impExpSvc ImportExportService
 }
 
-func NewProfessorService(userRepo repository.UserRepository, orgRepo repository.OrgRepository) ProfessorService {
-	return &professorService{userRepo: userRepo, orgRepo: orgRepo}
+func NewProfessorService(userRepo repository.UserRepository, orgRepo repository.OrgRepository, impExpSvc ImportExportService) ProfessorService {
+	return &professorService{userRepo: userRepo, orgRepo: orgRepo, impExpSvc: impExpSvc}
 }
 
 func (s *professorService) validateScope(facultyID uint, departmentID *uint) error {
@@ -121,4 +123,12 @@ func (s *professorService) DeleteProfessor(id uint) error {
 	}
 
 	return s.userRepo.DeleteUser(user.ID)
+}
+
+func (s *professorService) ExportProfessors(facultyID, departmentID *uint) ([]byte, error) {
+	professors, err := s.ListProfessors(facultyID, departmentID)
+	if err != nil {
+		return nil, err
+	}
+	return s.impExpSvc.ExportToExcel(professors, "Professors")
 }

@@ -68,16 +68,16 @@ type SectionTeachingAssistant struct {
 }
 
 type Enrollment struct {
-	ID        uint           `gorm:"primaryKey" json:"id"`
-	StudentID uint           `gorm:"uniqueIndex:idx_student_section;not null" json:"student_id"`
-	Student   *User          `json:"student,omitempty"`
-	SectionID uint           `gorm:"uniqueIndex:idx_student_section;not null" json:"section_id"`
-	Section   *Section       `json:"section,omitempty"`
-	Grade     *float64       `json:"grade"`                                             // Nullable until graded
-	Status    string         `gorm:"type:varchar(20);default:'enrolled'" json:"status"` // e.g., enrolled, dropped, completed
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+	ID        uint           `gorm:"primaryKey" json:"id" excel:"ID"`
+	StudentID uint           `gorm:"uniqueIndex:idx_student_section;not null" json:"student_id" excel:"Student ID"`
+	Student   *User          `json:"student,omitempty" excel:"-"`
+	SectionID uint           `gorm:"uniqueIndex:idx_student_section;not null" json:"section_id" excel:"Section ID"`
+	Section   *Section       `json:"section,omitempty" excel:"-"`
+	Grade     *float64       `json:"grade" excel:"Grade"`                               // Nullable until graded
+	Status    string         `gorm:"type:varchar(20);default:'enrolled'" json:"status" excel:"Status"` // e.g., enrolled, dropped, completed
+	CreatedAt time.Time      `json:"created_at" excel:"Created At"`
+	UpdatedAt time.Time      `json:"updated_at" excel:"Updated At"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-" excel:"-"`
 }
 
 type Attendance struct {

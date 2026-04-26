@@ -17,15 +17,17 @@ type StudentService interface {
 	TransferStudent(id uint, facultyID uint, departmentID *uint) (*models.User, error)
 	GetTransferHistory(id uint) ([]models.StudentDepartmentHistory, error)
 	DeleteStudent(id uint) error
+	ExportStudents(facultyID, departmentID *uint) ([]byte, error)
 }
 
 type studentService struct {
-	userRepo repository.UserRepository
-	orgRepo  repository.OrgRepository
+	userRepo  repository.UserRepository
+	orgRepo   repository.OrgRepository
+	impExpSvc ImportExportService
 }
 
-func NewStudentService(userRepo repository.UserRepository, orgRepo repository.OrgRepository) StudentService {
-	return &studentService{userRepo: userRepo, orgRepo: orgRepo}
+func NewStudentService(userRepo repository.UserRepository, orgRepo repository.OrgRepository, impExpSvc ImportExportService) StudentService {
+	return &studentService{userRepo: userRepo, orgRepo: orgRepo, impExpSvc: impExpSvc}
 }
 
 func (s *studentService) validateScope(facultyID uint, departmentID *uint) error {
@@ -165,4 +167,12 @@ func (s *studentService) GetTransferHistory(id uint) ([]models.StudentDepartment
 	}
 
 	return s.userRepo.GetStudentDepartmentHistory(id)
+}
+
+func (s *studentService) ExportStudents(facultyID, departmentID *uint) ([]byte, error) {
+	students, err := s.ListStudents(facultyID, departmentID)
+	if err != nil {
+		return nil, err
+	}
+	return s.impExpSvc.ExportToExcel(students, "Students")
 }

@@ -75,6 +75,9 @@ type AcademicService interface {
 
 	// GPA Calculation
 	CalculateGPA(studentID uint) (float64, error)
+
+	ExportEnrollments(sectionID uint) ([]byte, error)
+	ExportGrades(sectionID uint) ([]byte, error)
 }
 
 type academicService struct {
@@ -831,4 +834,20 @@ func (s *academicService) CalculateGPA(studentID uint) (float64, error) {
 	}
 
 	return totalGradePoints / float64(totalCredits), nil
+}
+
+func (s *academicService) ExportEnrollments(sectionID uint) ([]byte, error) {
+	enrollments, err := s.repo.GetEnrollmentsBySection(sectionID)
+	if err != nil {
+		return nil, err
+	}
+	return s.impExpSvc.ExportToExcel(enrollments, "Enrollments")
+}
+
+func (s *academicService) ExportGrades(sectionID uint) ([]byte, error) {
+	enrollments, err := s.repo.GetEnrollmentsBySection(sectionID)
+	if err != nil {
+		return nil, err
+	}
+	return s.impExpSvc.ExportToExcel(enrollments, "Grades")
 }
