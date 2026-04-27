@@ -206,6 +206,14 @@ Admin routes are currently mounted under `/api/v1/admin`.
 - `GET /import-templates/students`
 - `GET /import-templates/grades`
 
+### Governance
+
+- `GET /governance/audit-logs`
+- `GET /governance/webhooks`
+- `POST /governance/webhooks`
+- `DELETE /governance/webhooks/:id`
+- `GET /governance/webhooks/:id/deliveries`
+
 ## Student Portal
 
 Student portal routes are mounted under `/api/v1/student` and require a `student` role.
