@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"strconv"
 	"time"
@@ -22,14 +21,6 @@ type EmployeeService interface {
 	DeleteEmployee(id uint) error
 	ImportStudentsFromExcel(file io.Reader, facultyID uint) (int, error)
 	ExportEmployees(facultyID *uint) ([]byte, error)
-}
-...
-func (s *employeeService) ExportEmployees(facultyID *uint) ([]byte, error) {
-	employees, err := s.ListEmployees(facultyID)
-	if err != nil {
-		return nil, err
-	}
-	return s.impExpSvc.ExportToExcel(employees, "Employees")
 }
 
 type employeeService struct {
@@ -191,4 +182,12 @@ func (s *employeeService) ImportStudentsFromExcel(file io.Reader, facultyID uint
 	}
 
 	return successCount, nil
+}
+
+func (s *employeeService) ExportEmployees(facultyID *uint) ([]byte, error) {
+	employees, err := s.ListEmployees(facultyID)
+	if err != nil {
+		return nil, err
+	}
+	return s.impExpSvc.ExportToExcel(employees, "Employees")
 }

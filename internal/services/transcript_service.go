@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/johnfercher/maroto/pkg/color"
 	"github.com/johnfercher/maroto/pkg/consts"
 	"github.com/johnfercher/maroto/pkg/pdf"
 	"github.com/johnfercher/maroto/pkg/props"
@@ -81,8 +80,8 @@ func (s *transcriptService) GenerateTranscriptPDF(student *models.User, enrollme
 					GridSizes: []uint{2, 2, 4, 1, 1, 2},
 				},
 				Align:                consts.Center,
-				AlternatingColor:     &color.Color{Red: 240, Green: 240, Blue: 240},
-				HeaderBackgroundColor: &color.Color{Red: 200, Green: 200, Blue: 200},
+				// AlternatingColor:     &color.Color{Red: 240, Green: 240, Blue: 240},
+				// HeaderBackgroundColor: &color.Color{Red: 200, Green: 200, Blue: 200},
 			})
 		})
 	})

@@ -2,7 +2,6 @@ package services
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/ahmedmalmoselhy/unione_go/internal/models"
 	"gorm.io/gorm"
