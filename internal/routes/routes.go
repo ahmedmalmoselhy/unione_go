@@ -61,21 +61,18 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	profPortalHandler := handlers.NewProfessorPortalHandler(profPortalService)
 
 	govHandler := handlers.NewGovernanceHandler(auditSvc, webhookSvc)
+	healthHandler := handlers.NewHealthHandler(db)
 
 	api := r.Group("/api")
 
 	// Health check endpoint
-	api.GET("/health", func(c *gin.Context) {
-		apiutil.Success(c, http.StatusOK, gin.H{"status": "UP"})
-	})
+	api.GET("/health", healthHandler.HealthCheck)
 
 	v1 := api.Group("/v1")
 	{
 		v1.Use(middlewares.AuditMiddleware(auditSvc))
 
-		v1.GET("/health", func(c *gin.Context) {
-			apiutil.Success(c, http.StatusOK, gin.H{"status": "UP"})
-		})
+		v1.GET("/health", healthHandler.HealthCheck)
 
 		auth := v1.Group("/auth")
 		{
