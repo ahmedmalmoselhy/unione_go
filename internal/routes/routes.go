@@ -1,9 +1,6 @@
 package routes
 
 import (
-	"net/http"
-
-	"github.com/ahmedmalmoselhy/unione_go/internal/apiutil"
 	"github.com/ahmedmalmoselhy/unione_go/internal/config"
 	"github.com/ahmedmalmoselhy/unione_go/internal/handlers"
 	"github.com/ahmedmalmoselhy/unione_go/internal/middlewares"
@@ -135,9 +132,9 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 
 			academic.GET("/sections", academicHandler.GetSections)
 			academic.POST("/sections", middlewares.RequireRole("admin", "employee"), academicHandler.CreateSection)
-			academic.GET("/sections/:id", academicHandler.GetSection)
-			academic.PUT("/sections/:id", middlewares.RequireRole("admin", "employee"), academicHandler.UpdateSection)
-			academic.DELETE("/sections/:id", middlewares.RequireRole("admin"), academicHandler.DeleteSection)
+			academic.GET("/sections/:section_id", academicHandler.GetSection)
+			academic.PUT("/sections/:section_id", middlewares.RequireRole("admin", "employee"), academicHandler.UpdateSection)
+			academic.DELETE("/sections/:section_id", middlewares.RequireRole("admin"), academicHandler.DeleteSection)
 
 			academic.POST("/sections/:section_id/enrollments", middlewares.RequireRole("admin", "employee"), academicHandler.Enroll)
 			academic.GET("/sections/:section_id/enrollments", middlewares.RequireRole("admin", "employee", "professor"), academicHandler.GetSectionEnrollments)
@@ -220,9 +217,9 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 
 			admin.GET("/academic/sections", academicHandler.GetSections)
 			admin.POST("/academic/sections", academicHandler.CreateSection)
-			admin.GET("/academic/sections/:id", academicHandler.GetSection)
-			admin.PUT("/academic/sections/:id", academicHandler.UpdateSection)
-			admin.DELETE("/academic/sections/:id", academicHandler.DeleteSection)
+			admin.GET("/academic/sections/:section_id", academicHandler.GetSection)
+			admin.PUT("/academic/sections/:section_id", academicHandler.UpdateSection)
+			admin.DELETE("/academic/sections/:section_id", academicHandler.DeleteSection)
 			admin.GET("/academic/sections/:section_id/teaching-assistants", academicHandler.ListTeachingAssistants)
 			admin.POST("/academic/sections/:section_id/teaching-assistants", academicHandler.AssignTeachingAssistant)
 			admin.DELETE("/academic/sections/:section_id/teaching-assistants/:id", academicHandler.RemoveTeachingAssistant)
@@ -291,10 +288,10 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		{
 			professor.GET("/profile", profPortalHandler.GetProfile)
 			professor.GET("/sections", profPortalHandler.GetSections)
-			professor.GET("/sections/:id/roster", profPortalHandler.GetSectionRoster)
-			professor.PATCH("/sections/:id/grade", profPortalHandler.UpdateGrade)
-			professor.POST("/sections/:id/attendance", profPortalHandler.RecordAttendance)
-			professor.POST("/sections/:id/announcements", profPortalHandler.CreateSectionAnnouncement)
+			professor.GET("/sections/:section_id/roster", profPortalHandler.GetSectionRoster)
+			professor.PATCH("/sections/:section_id/grade", profPortalHandler.UpdateGrade)
+			professor.POST("/sections/:section_id/attendance", profPortalHandler.RecordAttendance)
+			professor.POST("/sections/:section_id/announcements", profPortalHandler.CreateSectionAnnouncement)
 			professor.GET("/schedule", profPortalHandler.GetSchedule)
 		}
 	}

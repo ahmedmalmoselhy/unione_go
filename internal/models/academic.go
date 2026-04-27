@@ -61,7 +61,7 @@ type SectionTeachingAssistant struct {
 	ProfessorID      uint           `gorm:"uniqueIndex:idx_section_professor_ta;not null" json:"professor_id"`
 	Professor        *User          `json:"professor,omitempty"`
 	AssignedByUserID *uint          `json:"assigned_by_user_id"`
-	AssignedBy       *User          `json:"assigned_by,omitempty"`
+	AssignedBy       *User          `gorm:"foreignKey:AssignedByUserID" json:"assigned_by,omitempty"`
 	CreatedAt        time.Time      `json:"created_at"`
 	UpdatedAt        time.Time      `json:"updated_at"`
 	DeletedAt        gorm.DeletedAt `gorm:"index" json:"-"`
@@ -118,7 +118,7 @@ type GroupProject struct {
 	MaxMembers      int                  `gorm:"default:5" json:"max_members"`
 	IsActive        bool                 `gorm:"default:true" json:"is_active"`
 	CreatedByUserID *uint                `json:"created_by_user_id"`
-	CreatedBy       *User                `json:"created_by,omitempty"`
+	CreatedBy       *User                `gorm:"foreignKey:CreatedByUserID" json:"created_by,omitempty"`
 	Members         []GroupProjectMember `json:"members,omitempty"`
 	CreatedAt       time.Time            `json:"created_at"`
 	UpdatedAt       time.Time            `json:"updated_at"`

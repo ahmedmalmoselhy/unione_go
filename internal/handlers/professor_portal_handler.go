@@ -39,7 +39,7 @@ func (h *ProfessorPortalHandler) GetSections(c *gin.Context) {
 
 func (h *ProfessorPortalHandler) GetSectionRoster(c *gin.Context) {
 	professorID := c.MustGet("user_id").(uint)
-	sectionID, err := apiutil.ParseUintParam(c, "id")
+	sectionID, err := apiutil.ParseUintParam(c, "section_id")
 	if err != nil {
 		apiutil.Error(c, http.StatusBadRequest, "invalid_id", err.Error())
 		return
@@ -55,7 +55,7 @@ func (h *ProfessorPortalHandler) GetSectionRoster(c *gin.Context) {
 
 func (h *ProfessorPortalHandler) UpdateGrade(c *gin.Context) {
 	professorID := c.MustGet("user_id").(uint)
-	sectionID, err := apiutil.ParseUintParam(c, "id")
+	sectionID, err := apiutil.ParseUintParam(c, "section_id")
 	if err != nil {
 		apiutil.Error(c, http.StatusBadRequest, "invalid_id", err.Error())
 		return
@@ -80,7 +80,7 @@ func (h *ProfessorPortalHandler) UpdateGrade(c *gin.Context) {
 
 func (h *ProfessorPortalHandler) RecordAttendance(c *gin.Context) {
 	professorID := c.MustGet("user_id").(uint)
-	sectionID, err := apiutil.ParseUintParam(c, "id")
+	sectionID, err := apiutil.ParseUintParam(c, "section_id")
 	if err != nil {
 		apiutil.Error(c, http.StatusBadRequest, "invalid_id", err.Error())
 		return
@@ -104,7 +104,7 @@ func (h *ProfessorPortalHandler) RecordAttendance(c *gin.Context) {
 
 func (h *ProfessorPortalHandler) CreateSectionAnnouncement(c *gin.Context) {
 	professorID := c.MustGet("user_id").(uint)
-	sectionID, err := apiutil.ParseUintParam(c, "id")
+	sectionID, err := apiutil.ParseUintParam(c, "section_id")
 	if err != nil {
 		apiutil.Error(c, http.StatusBadRequest, "invalid_id", err.Error())
 		return

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/ahmedmalmoselhy/unione_go/internal/apiutil"
 	"github.com/ahmedmalmoselhy/unione_go/internal/services"
@@ -206,7 +207,7 @@ func (h *StudentHandler) ExportStudents(c *gin.Context) {
 		}
 	}
 
-	data, err := h.service.ExportStudents(facultyID, deptID)
+	data, err := h.studentService.ExportStudents(facultyID, deptID)
 	if err != nil {
 		apiutil.Error(c, http.StatusInternalServerError, "export_failed", err.Error())
 		return

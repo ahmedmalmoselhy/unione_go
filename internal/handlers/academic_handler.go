@@ -337,7 +337,7 @@ func (h *AcademicHandler) GetSections(c *gin.Context) {
 }
 
 func (h *AcademicHandler) GetSection(c *gin.Context) {
-	id, err := apiutil.ParseUintParam(c, "id")
+	id, err := apiutil.ParseUintParam(c, "section_id")
 	if err != nil {
 		apiutil.Error(c, http.StatusBadRequest, "invalid_section_id", err.Error())
 		return
@@ -353,7 +353,7 @@ func (h *AcademicHandler) GetSection(c *gin.Context) {
 }
 
 func (h *AcademicHandler) UpdateSection(c *gin.Context) {
-	id, err := apiutil.ParseUintParam(c, "id")
+	id, err := apiutil.ParseUintParam(c, "section_id")
 	if err != nil {
 		apiutil.Error(c, http.StatusBadRequest, "invalid_section_id", err.Error())
 		return
@@ -375,7 +375,7 @@ func (h *AcademicHandler) UpdateSection(c *gin.Context) {
 }
 
 func (h *AcademicHandler) DeleteSection(c *gin.Context) {
-	id, err := apiutil.ParseUintParam(c, "id")
+	id, err := apiutil.ParseUintParam(c, "section_id")
 	if err != nil {
 		apiutil.Error(c, http.StatusBadRequest, "invalid_section_id", err.Error())
 		return
@@ -610,7 +610,7 @@ func (h *AcademicHandler) ExportEnrollments(c *gin.Context) {
 		return
 	}
 
-	data, err := h.service.ExportEnrollments(sectionID)
+	data, err := h.academicService.ExportEnrollments(sectionID)
 	if err != nil {
 		apiutil.Error(c, http.StatusInternalServerError, "export_failed", err.Error())
 		return
@@ -628,7 +628,7 @@ func (h *AcademicHandler) ExportGrades(c *gin.Context) {
 		return
 	}
 
-	data, err := h.service.ExportGrades(sectionID)
+	data, err := h.academicService.ExportGrades(sectionID)
 	if err != nil {
 		apiutil.Error(c, http.StatusInternalServerError, "export_failed", err.Error())
 		return

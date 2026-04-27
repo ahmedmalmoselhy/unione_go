@@ -73,7 +73,7 @@ func (h *AnnouncementHandler) ListAnnouncements(c *gin.Context) {
 }
 
 func (h *AnnouncementHandler) MarkRead(c *gin.Context) {
-	announcementID, err := apiutil.ParseID(c.Param("id"))
+	announcementID, err := apiutil.ParseUintParam(c, "id")
 	if err != nil {
 		apiutil.Error(c, http.StatusBadRequest, "invalid_id", "Invalid announcement ID")
 		return

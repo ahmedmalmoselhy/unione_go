@@ -41,7 +41,7 @@ func (h *NotificationHandler) ListNotifications(c *gin.Context) {
 }
 
 func (h *NotificationHandler) MarkRead(c *gin.Context) {
-	id, err := apiutil.ParseID(c.Param("id"))
+	id, err := apiutil.ParseUintParam(c, "id")
 	if err != nil {
 		apiutil.Error(c, http.StatusBadRequest, "invalid_id", "Invalid notification ID")
 		return
@@ -77,7 +77,7 @@ func (h *NotificationHandler) MarkAllRead(c *gin.Context) {
 }
 
 func (h *NotificationHandler) Delete(c *gin.Context) {
-	id, err := apiutil.ParseID(c.Param("id"))
+	id, err := apiutil.ParseUintParam(c, "id")
 	if err != nil {
 		apiutil.Error(c, http.StatusBadRequest, "invalid_id", "Invalid notification ID")
 		return
