@@ -61,11 +61,20 @@ func LoadConfig() *Config {
 
 func (c *Config) Validate() error {
 	if c.DatabaseURL == "" {
-		return fmt.Errorf("database configuration is missing")
+		return fmt.Errorf("database configuration is missing (DB_HOST, DB_USER, etc.)")
 	}
 
 	if c.JWTSecret == "" {
 		return fmt.Errorf("JWT_SECRET is required")
+	}
+
+	if _, err := strconv.Atoi(c.Port); err != nil {
+		return fmt.Errorf("invalid PORT: %v", err)
+	}
+
+	// Warn if SMTP is missing but don't fail as it might be optional for some environments
+	if c.SMTPHost == "" {
+		log.Println("Warning: SMTP_HOST is not set, email features will be disabled")
 	}
 
 	return nil
