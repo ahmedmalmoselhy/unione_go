@@ -10,6 +10,7 @@ import (
 	"github.com/ahmedmalmoselhy/unione_go/internal/repository"
 	"github.com/ahmedmalmoselhy/unione_go/internal/services"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/time/rate"
 	"gorm.io/gorm"
 )
 
@@ -17,6 +18,10 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(middlewares.RequestLogger())
+
+	// Rate Limiter: 10 req/s, burst of 20
+	limiter := middlewares.NewIPRateLimiter(rate.Limit(10), 20)
+	r.Use(middlewares.RateLimiterMiddleware(limiter))
 
 	// Dependency Injection
 	auditSvc := services.NewAuditService(db)
