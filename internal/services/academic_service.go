@@ -81,14 +81,23 @@ type AcademicService interface {
 }
 
 type academicService struct {
-	repo      repository.AcademicRepository
-	userRepo  repository.UserRepository
-	notifSvc  NotificationService
-	impExpSvc ImportExportService
+	repo       repository.AcademicRepository
+	userRepo   repository.UserRepository
+	notifSvc   NotificationService
+	impExpSvc  ImportExportService
+	auditSvc   *AuditService
+	webhookSvc *WebhookService
 }
 
-func NewAcademicService(repo repository.AcademicRepository, userRepo repository.UserRepository, notifSvc NotificationService, impExpSvc ImportExportService) AcademicService {
-	return &academicService{repo: repo, userRepo: userRepo, notifSvc: notifSvc, impExpSvc: impExpSvc}
+func NewAcademicService(repo repository.AcademicRepository, userRepo repository.UserRepository, notifSvc NotificationService, impExpSvc ImportExportService, auditSvc *AuditService, webhookSvc *WebhookService) AcademicService {
+	return &academicService{
+		repo:       repo,
+		userRepo:   userRepo,
+		notifSvc:   notifSvc,
+		impExpSvc:  impExpSvc,
+		auditSvc:   auditSvc,
+		webhookSvc: webhookSvc,
+	}
 }
 
 // Term logic
@@ -357,6 +366,14 @@ func (s *academicService) EnrollStudent(studentID, sectionID uint) (*models.Enro
 	if err := s.repo.CreateEnrollment(enrollment); err != nil {
 		return nil, err
 	}
+
+	// Trigger webhook
+	s.webhookSvc.Trigger("student.enrolled", map[string]interface{}{
+		"student_id": studentID,
+		"section_id": sectionID,
+		"status":     "enrolled",
+	})
+
 	return s.repo.GetEnrollment(studentID, sectionID)
 }
 
@@ -388,6 +405,14 @@ func (s *academicService) UpdateGrade(studentID, sectionID uint, grade float64) 
 			fmt.Sprintf("Your final grade for %s has been posted: %.2f", courseName, grade),
 			"",
 		)
+
+		// Trigger webhook
+		s.webhookSvc.Trigger("grade.updated", map[string]interface{}{
+			"student_id": studentID,
+			"section_id": sectionID,
+			"grade":      grade,
+			"course":     courseName,
+		})
 	}()
 
 	return s.repo.GetEnrollment(studentID, sectionID)

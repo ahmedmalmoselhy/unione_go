@@ -19,6 +19,9 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	r.Use(middlewares.RequestLogger())
 
 	// Dependency Injection
+	auditSvc := services.NewAuditService(db)
+	webhookSvc := services.NewWebhookService(db)
+
 	impExpSvc := services.NewImportExportService()
 	transcriptSvc := services.NewTranscriptService()
 
@@ -34,10 +37,10 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	employeeHandler := handlers.NewEmployeeHandler(employeeService)
 	templateHandler := handlers.NewTemplateHandler(impExpSvc)
 
-	studentService := services.NewStudentService(userRepo, orgRepo, impExpSvc)
+	studentService := services.NewStudentService(userRepo, orgRepo, impExpSvc, auditSvc, webhookSvc)
 	studentHandler := handlers.NewStudentHandler(studentService)
 
-	professorService := services.NewProfessorService(userRepo, orgRepo, impExpSvc)
+	professorService := services.NewProfessorService(userRepo, orgRepo, impExpSvc, auditSvc, webhookSvc)
 	professorHandler := handlers.NewProfessorHandler(professorService)
 
 	annRepo := repository.NewAnnouncementRepository(db)
@@ -48,7 +51,7 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	annHandler := handlers.NewAnnouncementHandler(notifSvc)
 	notifHandler := handlers.NewNotificationHandler(notifSvc)
 
-	academicService := services.NewAcademicService(academicRepo, userRepo, notifSvc, impExpSvc)
+	academicService := services.NewAcademicService(academicRepo, userRepo, notifSvc, impExpSvc, auditSvc, webhookSvc)
 	academicHandler := handlers.NewAcademicHandler(academicService)
 
 	portalService := services.NewStudentPortalService(userRepo, academicRepo, academicService, transcriptSvc)
@@ -56,6 +59,8 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 
 	profPortalService := services.NewProfessorPortalService(userRepo, academicRepo, annRepo, academicService, notifSvc)
 	profPortalHandler := handlers.NewProfessorPortalHandler(profPortalService)
+
+	govHandler := handlers.NewGovernanceHandler(auditSvc, webhookSvc)
 
 	api := r.Group("/api")
 
@@ -66,6 +71,8 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 
 	v1 := api.Group("/v1")
 	{
+		v1.Use(middlewares.AuditMiddleware(auditSvc))
+
 		v1.GET("/health", func(c *gin.Context) {
 			apiutil.Success(c, http.StatusOK, gin.H{"status": "UP"})
 		})
@@ -244,6 +251,16 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			admin.POST("/organizations/departments", orgHandler.AdminCreateDepartment)
 			admin.PUT("/organizations/departments/:id", orgHandler.AdminUpdateDepartment)
 			admin.DELETE("/organizations/departments/:id", orgHandler.DeleteDepartment)
+
+			// Governance
+			gov := admin.Group("/governance", middlewares.RequireRole("admin"))
+			{
+				gov.GET("/audit-logs", govHandler.GetAuditLogs)
+				gov.GET("/webhooks", govHandler.ListWebhooks)
+				gov.POST("/webhooks", govHandler.CreateWebhook)
+				gov.DELETE("/webhooks/:id", govHandler.DeleteWebhook)
+				gov.GET("/webhooks/:id/deliveries", govHandler.GetWebhookDeliveries)
+			}
 		}
 
 		// Student Portal

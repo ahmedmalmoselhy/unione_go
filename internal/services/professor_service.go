@@ -18,13 +18,21 @@ type ProfessorService interface {
 }
 
 type professorService struct {
-	userRepo  repository.UserRepository
-	orgRepo   repository.OrgRepository
-	impExpSvc ImportExportService
+	userRepo   repository.UserRepository
+	orgRepo    repository.OrgRepository
+	impExpSvc  ImportExportService
+	auditSvc   *AuditService
+	webhookSvc *WebhookService
 }
 
-func NewProfessorService(userRepo repository.UserRepository, orgRepo repository.OrgRepository, impExpSvc ImportExportService) ProfessorService {
-	return &professorService{userRepo: userRepo, orgRepo: orgRepo, impExpSvc: impExpSvc}
+func NewProfessorService(userRepo repository.UserRepository, orgRepo repository.OrgRepository, impExpSvc ImportExportService, auditSvc *AuditService, webhookSvc *WebhookService) ProfessorService {
+	return &professorService{
+		userRepo:   userRepo,
+		orgRepo:    orgRepo,
+		impExpSvc:  impExpSvc,
+		auditSvc:   auditSvc,
+		webhookSvc: webhookSvc,
+	}
 }
 
 func (s *professorService) validateScope(facultyID uint, departmentID *uint) error {
@@ -70,6 +78,14 @@ func (s *professorService) CreateProfessor(email, password, firstName, lastName 
 	if err := s.userRepo.CreateUser(user); err != nil {
 		return nil, err
 	}
+
+	// Trigger webhook
+	s.webhookSvc.Trigger("professor.created", map[string]interface{}{
+		"id":         user.ID,
+		"email":      user.Email,
+		"first_name": user.FirstName,
+		"last_name":  user.LastName,
+	})
 
 	return user, nil
 }
