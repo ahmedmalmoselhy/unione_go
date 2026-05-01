@@ -62,6 +62,10 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	profPortalService := services.NewProfessorPortalService(userRepo, academicRepo, annRepo, academicService, notifSvc)
 	profPortalHandler := handlers.NewProfessorPortalHandler(profPortalService)
 
+	analyticsRepo := repository.NewAnalyticsRepository(db)
+	analyticsSvc := services.NewAnalyticsService(analyticsRepo, userRepo, academicService)
+	analyticsHandler := handlers.NewAnalyticsHandler(analyticsSvc)
+
 	govHandler := handlers.NewGovernanceHandler(auditSvc, webhookSvc)
 	healthHandler := handlers.NewHealthHandler(db)
 
@@ -250,6 +254,19 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			admin.POST("/organizations/departments", orgHandler.AdminCreateDepartment)
 			admin.PUT("/organizations/departments/:id", orgHandler.AdminUpdateDepartment)
 			admin.DELETE("/organizations/departments/:id", orgHandler.DeleteDepartment)
+
+			// Dashboard Stats
+			admin.GET("/dashboard/stats", analyticsHandler.GetDashboardStats)
+
+			// Analytics
+			analytics := admin.Group("/analytics")
+			{
+				analytics.GET("/enrollment-trends", analyticsHandler.GetEnrollmentTrends)
+				analytics.GET("/student-performance/:student_id", analyticsHandler.PredictStudentPerformance)
+				analytics.GET("/course-demand", analyticsHandler.GetCourseDemand)
+				analytics.GET("/professor-workload", analyticsHandler.GetProfessorWorkload)
+				analytics.GET("/attendance", analyticsHandler.GetAttendanceAnalytics)
+			}
 
 			// Governance
 			gov := admin.Group("/governance", middlewares.RequireRole("admin"))
