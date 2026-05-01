@@ -201,6 +201,15 @@ Admin routes are currently mounted under `/api/v1/admin`.
 - `PUT /organizations/departments/:id`
 - `DELETE /organizations/departments/:id`
 
+### Dashboard & Analytics
+
+- `GET /dashboard/stats`
+- `GET /analytics/enrollment-trends`
+- `GET /analytics/student-performance/:student_id`
+- `GET /analytics/course-demand`
+- `GET /analytics/professor-workload`
+- `GET /analytics/attendance`
+
 ### Import Templates
 
 - `GET /import-templates/students`
