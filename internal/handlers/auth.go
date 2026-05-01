@@ -31,6 +31,16 @@ type RegisterInput struct {
 	Role      models.Role `json:"role" binding:"required"`
 }
 
+// Register godoc
+// @Summary Register a new user
+// @Description Create a new user with the specified details.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param input body RegisterInput true "Registration details"
+// @Success 201 {object} map[string]string "data: {message: Registration successful}"
+// @Failure 400 {object} apiutil.errorResponse
+// @Router /auth/register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
 	var input RegisterInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -54,6 +64,17 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	apiutil.Message(c, http.StatusCreated, "Registration successful")
 }
 
+// Login godoc
+// @Summary Login and get a JWT token
+// @Description Authenticate a user and return a JWT token.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param input body LoginInput true "Login credentials"
+// @Success 200 {object} map[string]interface{} "data: {token: <jwt_token>}"
+// @Failure 400 {object} apiutil.errorResponse
+// @Failure 401 {object} apiutil.errorResponse
+// @Router /auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	var input LoginInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -70,6 +91,17 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	apiutil.Success(c, http.StatusOK, gin.H{"token": token})
 }
 
+// GetMe godoc
+// @Summary Get the current authenticated user
+// @Description Returns the profile of the user associated with the JWT token.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} models.User
+// @Failure 401 {object} apiutil.errorResponse
+// @Failure 404 {object} apiutil.errorResponse
+// @Router /auth/me [get]
 func (h *AuthHandler) GetMe(c *gin.Context) {
 	userID, exists := middlewares.GetUserID(c)
 	if !exists {

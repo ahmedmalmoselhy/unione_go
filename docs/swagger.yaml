@@ -1,0 +1,839 @@
+basePath: /api/v1
+definitions:
+  apiutil.errorBody:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+  apiutil.errorResponse:
+    properties:
+      error:
+        $ref: '#/definitions/apiutil.errorBody'
+    type: object
+  handlers.CreateStudentInput:
+    properties:
+      department_id:
+        type: integer
+      email:
+        type: string
+      faculty_id:
+        type: integer
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - faculty_id
+    - first_name
+    - last_name
+    - password
+    type: object
+  handlers.LoginInput:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  handlers.RegisterInput:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      role:
+        $ref: '#/definitions/models.Role'
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    - role
+    type: object
+  handlers.TransferStudentInput:
+    properties:
+      department_id:
+        type: integer
+      faculty_id:
+        type: integer
+    required:
+    - faculty_id
+    type: object
+  handlers.UpdateStudentInput:
+    properties:
+      department_id:
+        type: integer
+      faculty_id:
+        type: integer
+      first_name:
+        type: string
+      last_name:
+        type: string
+    required:
+    - faculty_id
+    - first_name
+    - last_name
+    type: object
+  models.AcademicTerm:
+    properties:
+      created_at:
+        type: string
+      end_date:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      name:
+        description: e.g., "Fall 2026"
+        type: string
+      start_date:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.AttendanceAnalyticsResponse:
+    properties:
+      by_status:
+        items:
+          $ref: '#/definitions/models.AttendanceStatusStat'
+        type: array
+      overall_attendance_rate:
+        type: number
+    type: object
+  models.AttendanceStatusStat:
+    properties:
+      count:
+        type: integer
+      percentage:
+        type: number
+      status:
+        type: string
+    type: object
+  models.CourseDemand:
+    properties:
+      capacity:
+        type: integer
+      code:
+        type: string
+      course_id:
+        type: integer
+      current_enrollments:
+        type: integer
+      demand_level:
+        type: string
+      fill_rate:
+        type: number
+      name:
+        type: string
+    type: object
+  models.CourseDemandResponse:
+    properties:
+      top_courses:
+        items:
+          $ref: '#/definitions/models.CourseDemand'
+        type: array
+    type: object
+  models.DashboardStats:
+    properties:
+      enrollment_rates:
+        items:
+          $ref: '#/definitions/models.SectionEnrollmentRate'
+        type: array
+      enrollment_status:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      gpa_distribution:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      grade_distribution:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      overview:
+        $ref: '#/definitions/models.OverviewStats'
+    type: object
+  models.EnrollmentTrend:
+    properties:
+      active:
+        type: integer
+      completed:
+        type: integer
+      drop_rate:
+        type: number
+      dropped:
+        type: integer
+      month:
+        type: string
+      total_enrollments:
+        type: integer
+    type: object
+  models.EnrollmentTrendsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.EnrollmentTrend'
+        type: array
+      period:
+        type: string
+    type: object
+  models.OverviewStats:
+    properties:
+      courses:
+        type: integer
+      professors:
+        type: integer
+      sections:
+        type: integer
+      students:
+        type: integer
+    type: object
+  models.ProfessorWorkload:
+    properties:
+      active_sections:
+        type: integer
+      hours_per_week:
+        type: integer
+      name:
+        type: string
+      professor_id:
+        type: integer
+      rank:
+        type: string
+      total_sections:
+        type: integer
+      workload_level:
+        type: string
+    type: object
+  models.ProfessorWorkloadResponse:
+    properties:
+      professors:
+        items:
+          $ref: '#/definitions/models.ProfessorWorkload'
+        type: array
+      summary:
+        $ref: '#/definitions/models.ProfessorWorkloadSummary'
+    type: object
+  models.ProfessorWorkloadSummary:
+    properties:
+      average_hours:
+        type: number
+      average_sections:
+        type: number
+      total_professors:
+        type: integer
+    type: object
+  models.Role:
+    enum:
+    - admin
+    - employee
+    - professor
+    - student
+    type: string
+    x-enum-varnames:
+    - RoleAdmin
+    - RoleEmployee
+    - RoleProfessor
+    - RoleStudent
+  models.SectionEnrollmentRate:
+    properties:
+      capacity:
+        type: integer
+      course_code:
+        type: string
+      course_name:
+        type: string
+      fill_pct:
+        type: number
+      filled:
+        type: integer
+      section_id:
+        type: integer
+    type: object
+  models.StudentDepartmentHistory:
+    properties:
+      created_at:
+        type: string
+      from_department_id:
+        type: integer
+      from_faculty_id:
+        type: integer
+      id:
+        type: integer
+      student:
+        $ref: '#/definitions/models.User'
+      student_id:
+        type: integer
+      to_department_id:
+        type: integer
+      to_faculty_id:
+        type: integer
+      transferred_at:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.StudentPerformancePrediction:
+    properties:
+      average_score:
+        type: number
+      confidence:
+        type: integer
+      current_gpa:
+        type: number
+      prediction:
+        type: string
+      risk_level:
+        type: string
+      trend:
+        type: string
+    type: object
+  models.User:
+    properties:
+      created_at:
+        type: string
+      date_of_birth:
+        type: string
+      department_id:
+        type: integer
+      department_transfers:
+        items:
+          $ref: '#/definitions/models.StudentDepartmentHistory'
+        type: array
+      email:
+        type: string
+      faculty_id:
+        type: integer
+      first_name:
+        type: string
+      gender:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      national_id:
+        type: string
+      phone:
+        type: string
+      role:
+        $ref: '#/definitions/models.Role'
+      updated_at:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is the UniOne Go backend server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: UniOne API
+  version: "1.0"
+paths:
+  /academic/terms:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of all academic terms.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.AcademicTerm'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: List all academic terms
+      tags:
+      - academic
+  /admin/analytics/attendance:
+    get:
+      consumes:
+      - application/json
+      description: Returns overall attendance rate and status breakdown.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AttendanceAnalyticsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get attendance analytics
+      tags:
+      - analytics
+  /admin/analytics/course-demand:
+    get:
+      consumes:
+      - application/json
+      description: Returns analysis of course demand based on current enrollments
+        and capacities.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CourseDemandResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get course demand analysis
+      tags:
+      - analytics
+  /admin/analytics/enrollment-trends:
+    get:
+      consumes:
+      - application/json
+      description: Returns enrollment data over time (monthly) for the specified period.
+      parameters:
+      - description: Period in months (default 12)
+        in: query
+        name: months
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.EnrollmentTrendsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get enrollment trends
+      tags:
+      - analytics
+  /admin/analytics/professor-workload:
+    get:
+      consumes:
+      - application/json
+      description: Returns workload stats for professors, including section counts
+        and hours.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ProfessorWorkloadResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get professor workload analysis
+      tags:
+      - analytics
+  /admin/analytics/student-performance/{student_id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a performance prediction for a specific student based on
+        their GPA and historical data.
+      parameters:
+      - description: Student ID
+        in: path
+        name: student_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.StudentPerformancePrediction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Predict student performance
+      tags:
+      - analytics
+  /admin/dashboard/stats:
+    get:
+      consumes:
+      - application/json
+      description: Returns overview stats, enrollment status, grade distribution,
+        GPA distribution, and section fill rates. Scoped by faculty or department
+        if provided.
+      parameters:
+      - description: Filter by faculty ID
+        in: query
+        name: faculty_id
+        type: integer
+      - description: Filter by department ID
+        in: query
+        name: department_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DashboardStats'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get dashboard statistics
+      tags:
+      - analytics
+  /admin/students:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of all students.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: List all students
+      tags:
+      - admin
+    post:
+      consumes:
+      - application/json
+      description: Creates a new student user and profile.
+      parameters:
+      - description: Student details
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateStudentInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new student
+      tags:
+      - admin
+  /admin/students/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft-deletes a student by their ID.
+      parameters:
+      - description: Student ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      security:
+      - BearerAuth: []
+      summary: Delete a student
+      tags:
+      - admin
+    get:
+      consumes:
+      - application/json
+      description: Returns a specific student by their ID.
+      parameters:
+      - description: Student ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get student by ID
+      tags:
+      - admin
+    put:
+      consumes:
+      - application/json
+      description: Updates the specified student's information.
+      parameters:
+      - description: Student ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated details
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UpdateStudentInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update student details
+      tags:
+      - admin
+  /admin/students/{id}/transfer:
+    post:
+      consumes:
+      - application/json
+      description: Record a student transfer and update their current organization
+        link.
+      parameters:
+      - description: Student ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Transfer details
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.TransferStudentInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      security:
+      - BearerAuth: []
+      summary: Transfer a student to another faculty/department
+      tags:
+      - admin
+  /admin/students/{id}/transfers:
+    get:
+      consumes:
+      - application/json
+      description: Returns the history of organization transfers for a student.
+      parameters:
+      - description: Student ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.StudentDepartmentHistory'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get student transfer history
+      tags:
+      - admin
+  /admin/students/export:
+    get:
+      description: Returns an Excel file containing the list of students.
+      produces:
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      responses:
+        "200":
+          description: Excel binary data
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Export students to Excel
+      tags:
+      - admin
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and return a JWT token.
+      parameters:
+      - description: Login credentials
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'data: {token: <jwt_token>}'
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+      summary: Login and get a JWT token
+      tags:
+      - auth
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Returns the profile of the user associated with the JWT token.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get the current authenticated user
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with the specified details.
+      parameters:
+      - description: Registration details
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RegisterInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 'data: {message: Registration successful}'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apiutil.errorResponse'
+      summary: Register a new user
+      tags:
+      - auth
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

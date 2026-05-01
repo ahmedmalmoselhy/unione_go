@@ -137,6 +137,15 @@ func (h *AcademicHandler) CreateTerm(c *gin.Context) {
 	apiutil.Success(c, http.StatusCreated, term)
 }
 
+// GetTerms godoc
+// @Summary List all academic terms
+// @Description Returns a list of all academic terms.
+// @Tags academic
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {array} models.AcademicTerm
+// @Router /academic/terms [get]
 func (h *AcademicHandler) GetTerms(c *gin.Context) {
 	terms, err := h.academicService.GetAllTerms()
 	if err != nil {

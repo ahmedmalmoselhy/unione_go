@@ -7,6 +7,9 @@ import (
 	"github.com/ahmedmalmoselhy/unione_go/internal/repository"
 	"github.com/ahmedmalmoselhy/unione_go/internal/services"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	_ "github.com/ahmedmalmoselhy/unione_go/docs"
 	"golang.org/x/time/rate"
 	"gorm.io/gorm"
 )
@@ -73,6 +76,9 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 
 	// Health check endpoint
 	api.GET("/health", healthHandler.HealthCheck)
+
+	// Swagger UI
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	v1 := api.Group("/v1")
 	{

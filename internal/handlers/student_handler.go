@@ -38,6 +38,17 @@ type TransferStudentInput struct {
 	DepartmentID *uint `json:"department_id"`
 }
 
+// CreateStudent godoc
+// @Summary Create a new student
+// @Description Creates a new student user and profile.
+// @Tags admin
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param input body CreateStudentInput true "Student details"
+// @Success 201 {object} models.User
+// @Failure 400 {object} apiutil.errorResponse
+// @Router /admin/students [post]
 func (h *StudentHandler) CreateStudent(c *gin.Context) {
 	var input CreateStudentInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -54,65 +65,88 @@ func (h *StudentHandler) CreateStudent(c *gin.Context) {
 		input.DepartmentID,
 	)
 	if err != nil {
-		apiutil.Error(c, http.StatusBadRequest, "create_student_failed", err.Error())
+		apiutil.Error(c, http.StatusBadRequest, "creation_failed", err.Error())
 		return
 	}
 
 	apiutil.Success(c, http.StatusCreated, student)
 }
 
+// ListStudents godoc
+// @Summary List all students
+// @Description Returns a list of all students, optionally filtered by faculty or department.
+// @Tags admin
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param faculty_id query int false "Filter by faculty ID"
+// @Param department_id query int false "Filter by department ID"
+// @Success 200 {array} models.User
+// @Router /admin/students [get]
 func (h *StudentHandler) ListStudents(c *gin.Context) {
-	var facultyID *uint
-	if c.Query("faculty_id") != "" {
-		value, err := apiutil.ParseRequiredUintQuery(c, "faculty_id")
-		if err != nil {
-			apiutil.Error(c, http.StatusBadRequest, "invalid_faculty_id", err.Error())
-			return
+	var facultyID, departmentID *uint
+
+	if fIDStr := c.Query("faculty_id"); fIDStr != "" {
+		if id, err := strconv.ParseUint(fIDStr, 10, 32); err == nil {
+			val := uint(id)
+			facultyID = &val
 		}
-		facultyID = &value
 	}
 
-	var departmentID *uint
-	if c.Query("department_id") != "" {
-		value, err := apiutil.ParseRequiredUintQuery(c, "department_id")
-		if err != nil {
-			apiutil.Error(c, http.StatusBadRequest, "invalid_department_id", err.Error())
-			return
+	if dIDStr := c.Query("department_id"); dIDStr != "" {
+		if id, err := strconv.ParseUint(dIDStr, 10, 32); err == nil {
+			val := uint(id)
+			departmentID = &val
 		}
-		departmentID = &value
 	}
 
 	students, err := h.studentService.ListStudents(facultyID, departmentID)
 	if err != nil {
-		apiutil.Error(c, http.StatusInternalServerError, "list_students_failed", err.Error())
+		apiutil.Error(c, http.StatusInternalServerError, "list_failed", err.Error())
 		return
 	}
 
 	apiutil.Success(c, http.StatusOK, students)
 }
 
+// GetStudent godoc
+// @Summary Get student by ID
+// @Description Returns a specific student by their ID.
+// @Tags admin
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Student ID"
+// @Success 200 {object} models.User
+// @Failure 404 {object} apiutil.errorResponse
+// @Router /admin/students/{id} [get]
 func (h *StudentHandler) GetStudent(c *gin.Context) {
-	id, err := apiutil.ParseUintParam(c, "id")
+	idStr := c.Param("id")
+	id, _ := strconv.ParseUint(idStr, 10, 32)
+	student, err := h.studentService.GetStudent(uint(id))
 	if err != nil {
-		apiutil.Error(c, http.StatusBadRequest, "invalid_student_id", err.Error())
-		return
-	}
-
-	student, err := h.studentService.GetStudent(id)
-	if err != nil {
-		apiutil.Error(c, http.StatusNotFound, "student_not_found", err.Error())
+		apiutil.Error(c, http.StatusNotFound, "not_found", "Student not found")
 		return
 	}
 
 	apiutil.Success(c, http.StatusOK, student)
 }
 
+// UpdateStudent godoc
+// @Summary Update student details
+// @Description Updates the specified student's information.
+// @Tags admin
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Student ID"
+// @Param input body UpdateStudentInput true "Updated details"
+// @Success 200 {object} models.User
+// @Failure 400 {object} apiutil.errorResponse
+// @Router /admin/students/{id} [put]
 func (h *StudentHandler) UpdateStudent(c *gin.Context) {
-	id, err := apiutil.ParseUintParam(c, "id")
-	if err != nil {
-		apiutil.Error(c, http.StatusBadRequest, "invalid_student_id", err.Error())
-		return
-	}
+	idStr := c.Param("id")
+	id, _ := strconv.ParseUint(idStr, 10, 32)
 
 	var input UpdateStudentInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -121,41 +155,56 @@ func (h *StudentHandler) UpdateStudent(c *gin.Context) {
 	}
 
 	student, err := h.studentService.UpdateStudent(
-		id,
+		uint(id),
 		input.FirstName,
 		input.LastName,
 		input.FacultyID,
 		input.DepartmentID,
 	)
 	if err != nil {
-		apiutil.Error(c, http.StatusBadRequest, "update_student_failed", err.Error())
+		apiutil.Error(c, http.StatusBadRequest, "update_failed", err.Error())
 		return
 	}
 
 	apiutil.Success(c, http.StatusOK, student)
 }
 
+// DeleteStudent godoc
+// @Summary Delete a student
+// @Description Soft-deletes a student by their ID.
+// @Tags admin
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Student ID"
+// @Success 204 "No Content"
+// @Router /admin/students/{id} [delete]
 func (h *StudentHandler) DeleteStudent(c *gin.Context) {
-	id, err := apiutil.ParseUintParam(c, "id")
-	if err != nil {
-		apiutil.Error(c, http.StatusBadRequest, "invalid_student_id", err.Error())
-		return
-	}
+	idStr := c.Param("id")
+	id, _ := strconv.ParseUint(idStr, 10, 32)
 
-	if err := h.studentService.DeleteStudent(id); err != nil {
-		apiutil.Error(c, http.StatusBadRequest, "delete_student_failed", err.Error())
+	if err := h.studentService.DeleteStudent(uint(id)); err != nil {
+		apiutil.Error(c, http.StatusInternalServerError, "delete_failed", err.Error())
 		return
 	}
 
 	apiutil.NoContent(c)
 }
 
+// TransferStudent godoc
+// @Summary Transfer a student to another faculty/department
+// @Description Record a student transfer and update their current organization link.
+// @Tags admin
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Student ID"
+// @Param input body TransferStudentInput true "Transfer details"
+// @Success 200 {object} models.User
+// @Router /admin/students/{id}/transfer [post]
 func (h *StudentHandler) TransferStudent(c *gin.Context) {
-	id, err := apiutil.ParseUintParam(c, "id")
-	if err != nil {
-		apiutil.Error(c, http.StatusBadRequest, "invalid_student_id", err.Error())
-		return
-	}
+	idStr := c.Param("id")
+	id, _ := strconv.ParseUint(idStr, 10, 32)
 
 	var input TransferStudentInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -163,57 +212,71 @@ func (h *StudentHandler) TransferStudent(c *gin.Context) {
 		return
 	}
 
-	student, err := h.studentService.TransferStudent(id, input.FacultyID, input.DepartmentID)
+	student, err := h.studentService.TransferStudent(uint(id), input.FacultyID, input.DepartmentID)
 	if err != nil {
-		apiutil.Error(c, http.StatusBadRequest, "transfer_student_failed", err.Error())
+		apiutil.Error(c, http.StatusBadRequest, "transfer_failed", err.Error())
 		return
 	}
 
 	apiutil.Success(c, http.StatusOK, student)
 }
 
+// GetTransferHistory godoc
+// @Summary Get student transfer history
+// @Description Returns the history of organization transfers for a student.
+// @Tags admin
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Student ID"
+// @Success 200 {array} models.StudentDepartmentHistory
+// @Router /admin/students/{id}/transfers [get]
 func (h *StudentHandler) GetTransferHistory(c *gin.Context) {
-	id, err := apiutil.ParseUintParam(c, "id")
-	if err != nil {
-		apiutil.Error(c, http.StatusBadRequest, "invalid_student_id", err.Error())
-		return
-	}
+	idStr := c.Param("id")
+	id, _ := strconv.ParseUint(idStr, 10, 32)
 
-	history, err := h.studentService.GetTransferHistory(id)
+	history, err := h.studentService.GetTransferHistory(uint(id))
 	if err != nil {
-		apiutil.Error(c, http.StatusBadRequest, "transfer_history_failed", err.Error())
+		apiutil.Error(c, http.StatusInternalServerError, "history_failed", err.Error())
 		return
 	}
 
 	apiutil.Success(c, http.StatusOK, history)
 }
 
+// ExportStudents godoc
+// @Summary Export students to Excel
+// @Description Returns an Excel file containing the list of students, optionally filtered.
+// @Tags admin
+// @Produce application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+// @Security BearerAuth
+// @Param faculty_id query int false "Filter by faculty ID"
+// @Param department_id query int false "Filter by department ID"
+// @Success 200 {string} string "Excel binary data"
+// @Router /admin/students/export [get]
 func (h *StudentHandler) ExportStudents(c *gin.Context) {
-	var facultyID *uint
-	if fID := c.Query("faculty_id"); fID != "" {
-		id, err := strconv.ParseUint(fID, 10, 32)
-		if err == nil {
-			uID := uint(id)
-			facultyID = &uID
+	var facultyID, departmentID *uint
+
+	if fIDStr := c.Query("faculty_id"); fIDStr != "" {
+		if id, err := strconv.ParseUint(fIDStr, 10, 32); err == nil {
+			val := uint(id)
+			facultyID = &val
 		}
 	}
 
-	var deptID *uint
-	if dID := c.Query("department_id"); dID != "" {
-		id, err := strconv.ParseUint(dID, 10, 32)
-		if err == nil {
-			uID := uint(id)
-			deptID = &uID
+	if dIDStr := c.Query("department_id"); dIDStr != "" {
+		if id, err := strconv.ParseUint(dIDStr, 10, 32); err == nil {
+			val := uint(id)
+			departmentID = &val
 		}
 	}
 
-	data, err := h.studentService.ExportStudents(facultyID, deptID)
+	data, err := h.studentService.ExportStudents(facultyID, departmentID)
 	if err != nil {
 		apiutil.Error(c, http.StatusInternalServerError, "export_failed", err.Error())
 		return
 	}
 
-	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 	c.Header("Content-Disposition", "attachment; filename=students.xlsx")
 	c.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", data)
 }
