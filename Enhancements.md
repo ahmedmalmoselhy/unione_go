@@ -99,5 +99,5 @@ The Go port is now production-ready and has reached feature parity with the cano
 
 ## Remaining Work
 
-- Comprehensive automated test suite (Unit and Integration)
-- Full OpenAPI/Swagger documentation annotations
+- [x] Comprehensive automated test suite (Unit and Integration)
+- [x] Full OpenAPI/Swagger documentation annotations
